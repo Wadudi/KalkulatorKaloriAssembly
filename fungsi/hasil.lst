@@ -1,0 +1,87 @@
+     1                                  hasil:
+     2                                  	
+     3 00000000 B804000000              	mov eax, 4
+     4 00000005 BB01000000              	mov ebx, 1
+     5                                  	mov ecx, hn
+     6          ******************       error: symbol `hn' undefined
+     7                                  	mov edx, hn_leng
+     8          ******************       error: symbol `hn_leng' undefined
+     9 0000000A CD80                    	int 0x80
+    10                                  	
+    11 0000000C B804000000              	mov eax, 4
+    12                                  	mov edx, leng
+    13          ******************       error: symbol `leng' undefined
+    14                                  	mov ecx, isi_nama
+    15          ******************       error: symbol `isi_nama' undefined
+    16 00000011 BB01000000              	mov ebx, 1
+    17 00000016 CD80                    	int 0x80
+    18                                  	
+    19                                  	mov eax, jenkel
+    20          ******************       error: symbol `jenkel' undefined
+    21 00000018 BB01000000                  mov ebx, 1
+    22                                      call printStr
+    23          ******************       error: symbol `printStr' undefined
+    24                                      
+    25                                  	mov eax, [j]
+    26          ******************       error: symbol `j' undefined
+    27 0000001D BB01000000              	mov ebx, 1
+    28                                  	call printNum
+    29          ******************       error: symbol `printNum' undefined
+    30                                  	
+    31                                  	; mengubah 32 bit menjadi 64bit
+    32                                      fld dword[no1]
+    33          ******************       error: symbol `no1' undefined
+    34                                      fstp qword[floatNum]
+    35          ******************       error: symbol `floatNum' undefined
+    36                                      
+    37                                  	push dword[floatNum+4]
+    38          ******************       error: symbol `floatNum' undefined
+    39                                  	push dword[floatNum]
+    40          ******************       error: symbol `floatNum' undefined
+    41                                  	push bba
+    42          ******************       error: symbol `bba' undefined
+    43                                  	call printf
+    44          ******************       error: symbol `printf' undefined
+    45 00000022 83C40C                  	add esp, 12
+    46                                  
+    47                                  	fld dword[no2]
+    48          ******************       error: symbol `no2' undefined
+    49                                      fstp qword[floatNum]
+    50          ******************       error: symbol `floatNum' undefined
+    51                                  
+    52                                  	push dword[floatNum+4]
+    53          ******************       error: symbol `floatNum' undefined
+    54                                  	push dword[floatNum]
+    55          ******************       error: symbol `floatNum' undefined
+    56                                  	push tba
+    57          ******************       error: symbol `tba' undefined
+    58                                  	call printf
+    59          ******************       error: symbol `printf' undefined
+    60 00000025 83C40C                  	add esp, 12
+    61                                  	
+    62                                  	fld dword[no3]
+    63          ******************       error: symbol `no3' undefined
+    64                                      fstp qword[floatNum]
+    65          ******************       error: symbol `floatNum' undefined
+    66                                      
+    67                                  	push dword[floatNum+4]
+    68          ******************       error: symbol `floatNum' undefined
+    69                                  	push dword[floatNum]
+    70          ******************       error: symbol `floatNum' undefined
+    71                                  	push ua
+    72          ******************       error: symbol `ua' undefined
+    73                                  	call printf
+    74          ******************       error: symbol `printf' undefined
+    75 00000028 83C40C                  	add esp, 12
+    76                                  	
+    77                                  	push dword[result4+4]
+    78          ******************       error: symbol `result4' undefined
+    79                                      push dword[result4]
+    80          ******************       error: symbol `result4' undefined
+    81                                      push keb_kalori
+    82          ******************       error: symbol `keb_kalori' undefined
+    83                                      call printf
+    84          ******************       error: symbol `printf' undefined
+    85 0000002B 83C40C                      add esp, 12
+    86                                  
+    87 0000002E C3                      ret

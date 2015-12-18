@@ -1,0 +1,91 @@
+     1                                  bmr_l_bennedict:
+     2                                  	fld qword[weightBL]
+     3          ******************       error: symbol `weightBL' undefined
+     4                                  	fstp qword[tmp]
+     5          ******************       error: symbol `tmp' undefined
+     6                                  
+     7                                  	fld dword[no1]
+     8          ******************       error: symbol `no1' undefined
+     9                                      fld qword[tmp]
+    10          ******************       error: symbol `tmp' undefined
+    11 00000000 DEC9                        fmul
+    12                                      fstp qword[result]
+    13          ******************       error: symbol `result' undefined
+    14                                  	;mov ebx, result
+    15                                  	
+    16                                  	fld qword[heightBL]
+    17          ******************       error: symbol `heightBL' undefined
+    18                                  	fstp qword[tmp]
+    19          ******************       error: symbol `tmp' undefined
+    20                                  
+    21                                  	fld dword[no2]
+    22          ******************       error: symbol `no2' undefined
+    23                                      fld qword[tmp]
+    24          ******************       error: symbol `tmp' undefined
+    25 00000002 DEC9                        fmul
+    26                                      fstp qword[result1]
+    27          ******************       error: symbol `result1' undefined
+    28                                  	;mov eax,result1
+    29                                  	
+    30                                  	fld qword[ageBL]
+    31          ******************       error: symbol `ageBL' undefined
+    32                                  	fstp qword[tmp]
+    33          ******************       error: symbol `tmp' undefined
+    34                                  	
+    35                                  	fld dword[no3]
+    36          ******************       error: symbol `no3' undefined
+    37                                  	fld qword[tmp]
+    38          ******************       error: symbol `tmp' undefined
+    39 00000004 DEC9                    	fmul
+    40                                  	fstp qword[result2]
+    41          ******************       error: symbol `result2' undefined
+    42                                  	
+    43                                  	fld qword[result]
+    44          ******************       error: symbol `result' undefined
+    45                                  	fld qword[result1]
+    46          ******************       error: symbol `result1' undefined
+    47 00000006 DEC1                    	fadd
+    48                                      fstp qword[result3]
+    49          ******************       error: symbol `result3' undefined
+    50                                  	
+    51                                  	fld qword[result3]
+    52          ******************       error: symbol `result3' undefined
+    53                                  	fld qword[result2]
+    54          ******************       error: symbol `result2' undefined
+    55 00000008 DEE9                    	fsub
+    56                                      fstp qword[result4]
+    57          ******************       error: symbol `result4' undefined
+    58                                  	
+    59                                  	fld qword[rmbl]
+    60          ******************       error: symbol `rmbl' undefined
+    61                                  	fstp qword[tmp]
+    62          ******************       error: symbol `tmp' undefined
+    63                                  	
+    64                                  	fld qword[result4]
+    65          ******************       error: symbol `result4' undefined
+    66                                  	fld qword[tmp]
+    67          ******************       error: symbol `tmp' undefined
+    68 0000000A DEC1                    	fadd
+    69                                  	fstp qword[result4]
+    70          ******************       error: symbol `result4' undefined
+    71                                  	
+    72                                      push dword[result4+4]
+    73          ******************       error: symbol `result4' undefined
+    74                                      push dword[result4]
+    75          ******************       error: symbol `result4' undefined
+    76                                      push mbr
+    77          ******************       error: symbol `mbr' undefined
+    78                                      call printf
+    79          ******************       error: symbol `printf' undefined
+    80 0000000C 83C40C                      add esp, 12
+    81                                  	
+    82 0000000F B804000000              	mov eax, 4
+    83 00000014 BB01000000                  mov ebx, 1
+    84                                      mov ecx, z
+    85          ******************       error: symbol `z' undefined
+    86                                      mov edx, z_leng
+    87          ******************       error: symbol `z_leng' undefined
+    88 00000019 CD80                        int 0x80
+    89                                      
+    90 0000001B C3                      ret
+    91                                  

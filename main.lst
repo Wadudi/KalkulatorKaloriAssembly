@@ -1,0 +1,1886 @@
+     1                                  ; fungsi untuk clear screen
+     2                                  %include    'fungsi/clrScr.asm'
+     3                              <1> ; @author 	: Ivan Maulana
+     4                              <1> ; @project 	: Clear Screen
+     5                              <1> 
+     6                              <1> section .data
+     7                              <1> 
+     8                              <1> section .bss
+     9                              <1> 
+    10                              <1> section .text
+    11                              <1> 
+    12                              <1> 
+    13                              <1> clrScr:
+    14 00000000 B804000000          <1>     mov eax, 4
+    15 00000005 BB01000000          <1>     mov ebx, 1
+    16 0000000A B9[F9080000]        <1>     mov ecx, clr_scr
+    17 0000000F BA08000000          <1>     mov edx, len_clr_scr
+    18 00000014 CD80                <1>     int 0x80
+    19 00000016 C3                  <1>     ret
+    20                                  
+    21                                  ; fungsi untuk print string
+    22                                  %include    'fungsi/printString.asm'
+    23                              <1> ; @author 	: Fakhri Izzudin
+    24                              <1> ; @project 	: Print String
+    25                              <1> 
+    26                              <1> section .data
+    27                              <1> 
+    28                              <1> section .bss
+    29                              <1> 
+    30                              <1> section .text
+    31                              <1> 
+    32                              <1> printStr:
+    33                              <1> 
+    34                              <1> 	; Reset pointer ecx dari parameter
+    35 00000017 89C1                <1> 	mov ecx, eax
+    36                              <1> 
+    37                              <1> _printStrLoop:
+    38                              <1> 	; cek sampai null
+    39 00000019 803900              <1> 	cmp byte [ecx], 0
+    40 0000001C 7411                <1> 	je _printStrExit
+    41                              <1> 	
+    42                              <1> 	; print
+    43 0000001E B804000000          <1> 	mov eax, 4
+    44 00000023 BA01000000          <1> 	mov edx, 1
+    45 00000028 CD80                <1> 	int 0x80
+    46                              <1> 
+    47                              <1> 	; Add counter
+    48 0000002A 83C101              <1> 	add ecx, 1
+    49                              <1> 
+    50 0000002D EBEA                <1> 	jmp _printStrLoop
+    51                              <1> 
+    52                              <1> _printStrExit:
+    53                              <1> 
+    54 0000002F C3                  <1> 	ret
+    55                                  
+    56                                  ; fungsi untuk scan number
+    57                                  %include    'fungsi/scanNum.asm'
+    58                              <1> ; @author 	: Fakhri Izzudin
+    59                              <1> ; @project 	: Scan Number
+    60                              <1> 
+    61                              <1> section .data
+    62                              <1> 	; angka 10
+    63 00000000 0A000000            <1> 	_scanNumSepuluh dd 10
+    64                              <1> 
+    65                              <1> section .bss
+    66 00000000 <res 00000001>      <1> 	_scanNumStr resb 1
+    67                              <1> 
+    68                              <1> 	; Penampung hasil akhir
+    69 00000001 <res 00000004>      <1> 	_scanNumResult resd 1
+    70                              <1> 
+    71                              <1> 	; negatif? 1:positif atau -1:negatif
+    72 00000005 <res 00000004>      <1> 	_scanNumNegative resd 1
+    73                              <1> 
+    74                              <1> section .text
+    75                              <1> 
+    76                              <1> 
+    77                              <1> _scanNumRead:
+    78                              <1> 
+    79                              <1> 	; Baca dari stdin ke _scanNumStr
+    80 00000030 B803000000          <1> 	mov eax, 3
+    81 00000035 BB00000000          <1> 	mov ebx, 0
+    82 0000003A B9[00000000]        <1> 	mov ecx, _scanNumStr
+    83 0000003F BA01000000          <1> 	mov edx, 1
+    84 00000044 CD80                <1> 	int 0x80
+    85                              <1> 
+    86 00000046 C3                  <1> 	ret
+    87                              <1> 
+    88                              <1> 
+    89                              <1> scanNum:
+    90                              <1> 
+    91                              <1> 	; Reset Result dan Negative
+    92 00000047 C705[01000000]0000- <1> 	mov dword [_scanNumResult], 0
+    93 0000004F 0000                <1>
+    94 00000051 C705[05000000]0100- <1> 	mov dword [_scanNumNegative], 1
+    95 00000059 0000                <1>
+    96                              <1> 	
+    97 0000005B E8D0FFFFFF          <1> 	call _scanNumRead
+    98                              <1> 
+    99                              <1> 	; periksa apakah negatif?
+   100 00000060 803D[00000000]2D    <1> 	cmp byte[_scanNumStr], '-'
+   101 00000067 750C                <1> 	jne _scanNumLoop
+   102                              <1> 
+   103                              <1> 	; Jika negatif
+   104 00000069 C705[05000000]FFFF- <1> 	mov dword [_scanNumNegative], -1
+   105 00000071 FFFF                <1>
+   106 00000073 EB2F                <1> 	jmp _scanNumNegativeNext
+   107                              <1> 
+   108                              <1> 
+   109                              <1> _scanNumLoop:
+   110                              <1> 
+   111                              <1> 	; ebx penampung angka
+   112 00000075 BB00000000          <1> 	mov ebx, 0
+   113 0000007A 8A1D[00000000]      <1> 	mov bl, byte[_scanNumStr]
+   114                              <1> 
+   115                              <1> 	; periksa apakah masih ada angka yang tersisa?
+   116 00000080 80FB30              <1> 	cmp bl, '0'
+   117 00000083 7C26                <1> 	jl _scanNumExit
+   118 00000085 80FB39              <1> 	cmp bl, '9'
+   119 00000088 7F21                <1> 	jg _scanNumExit
+   120                              <1> 
+   121                              <1> 	; konversi string ke int
+   122 0000008A 80EB30              <1> 	sub bl, '0'
+   123                              <1> 
+   124                              <1> 	; tambahkan ke result
+   125 0000008D A1[01000000]        <1> 	mov eax, [_scanNumResult]
+   126 00000092 BA00000000          <1> 	mov edx, 0
+   127 00000097 F725[00000000]      <1> 	mul dword [_scanNumSepuluh]
+   128 0000009D 01D8                <1> 	add eax, ebx
+   129 0000009F A3[01000000]        <1> 	mov dword [_scanNumResult], eax
+   130                              <1> 
+   131                              <1> _scanNumNegativeNext:
+   132                              <1> 
+   133                              <1> 	; Periksa angka berikutnya
+   134 000000A4 E887FFFFFF          <1> 	call _scanNumRead
+   135                              <1> 
+   136 000000A9 EBCA                <1> 	jmp _scanNumLoop
+   137                              <1> 
+   138                              <1> 
+   139                              <1> _scanNumExit:
+   140                              <1> 	
+   141                              <1> 	; Kalikan dengan negatif
+   142 000000AB A1[01000000]        <1> 	mov eax, [_scanNumResult]
+   143 000000B0 99                  <1> 	cdq
+   144 000000B1 F72D[05000000]      <1> 	imul dword[_scanNumNegative]
+   145                              <1> 
+   146 000000B7 C3                  <1> 	ret
+   147                                  
+   148                                  ; fungsi untuk print number
+   149                                  %include    'fungsi/printNum.asm'
+   150                              <1> ; @author 	: Fakhri Izzudin
+   151                              <1> ; @project 	: Print String
+   152                              <1> 
+   153                              <1> _printNumStrLen equ 255
+   154                              <1> 
+   155                              <1> section .data
+   156                              <1> 	; Angka 10
+   157 00000004 0A000000            <1> 	_printNumSepuluh dd 10
+   158                              <1> 
+   159                              <1> 	; Negative? 1: positive -1: negative
+   160 00000008 01000000            <1> 	_printNumNegative dd 1
+   161                              <1> 
+   162                              <1> section .bss
+   163                              <1> 	; Tempat penampungan string yang akan dicetak
+   164 00000009 <res 000000FF>      <1> 	_printNumStr resb _printNumStrLen
+   165                              <1> 
+   166                              <1> section .text
+   167                              <1> 
+   168                              <1> printNum:
+   169                              <1> 	
+   170                              <1> 	; Reset ecx -> index terakhir string yang akan dicetak
+   171 000000B8 B9FF000000          <1> 	mov ecx, _printNumStrLen
+   172 000000BD 83E901              <1> 	sub ecx, 1
+   173                              <1> 	; Reset negative
+   174 000000C0 C705[08000000]0100- <1> 	mov dword [_printNumNegative], 1
+   175 000000C8 0000                <1>
+   176                              <1> 
+   177                              <1> 	; Periksa apakah eax bernilai 0?
+   178 000000CA 83F800              <1> 	cmp eax, 0
+   179 000000CD 750C                <1> 	jne _printNumCekNegative
+   180                              <1> 
+   181                              <1> 	; Jika bernilai 0
+   182 000000CF C681[09000000]30    <1> 	mov byte [_printNumStr + ecx], '0'
+   183 000000D6 83E901              <1> 	sub ecx, 1
+   184 000000D9 EB39                <1> 	jmp _printNumCetak
+   185                              <1> 
+   186                              <1> _printNumCekNegative:
+   187                              <1> 	; Periksa apakah negative?
+   188 000000DB 83F800              <1> 	cmp eax, 0
+   189 000000DE 7F18                <1> 	jg _printNumLoop
+   190                              <1> 
+   191                              <1> 	; Jika bernilai negative
+   192 000000E0 C705[08000000]FFFF- <1> 	mov dword [_printNumNegative], -1
+   193 000000E8 FFFF                <1>
+   194 000000EA BA00000000          <1> 	mov edx, 0
+   195 000000EF 89C0                <1> 	mov eax, eax
+   196 000000F1 99                  <1> 	cdq
+   197 000000F2 F72D[08000000]      <1> 	imul dword [_printNumNegative]
+   198                              <1> 
+   199                              <1> 
+   200                              <1> _printNumLoop:
+   201                              <1> 
+   202                              <1> 	; eax dibagi 10 untuk di ambil belakang (edx) dan depan (eax)
+   203 000000F8 BA00000000          <1> 	mov edx, 0
+   204 000000FD F735[04000000]      <1> 	div dword [_printNumSepuluh]
+   205                              <1> 
+   206                              <1> 	; konversi int to string
+   207 00000103 80C230              <1> 	add dl, '0'
+   208 00000106 8891[09000000]      <1> 	mov byte [_printNumStr + ecx], dl
+   209                              <1> 
+   210 0000010C 83E901              <1> 	sub ecx, 1
+   211                              <1> 
+   212 0000010F 83F800              <1> 	cmp eax, 0
+   213 00000112 75E4                <1> 	jne _printNumLoop
+   214                              <1> 
+   215                              <1> 
+   216                              <1> _printNumCetak:
+   217                              <1> 
+   218                              <1> 	; Periksa apakah nilainya negative?
+   219 00000114 833D[08000000]FF    <1> 	cmp dword [_printNumNegative], -1
+   220 0000011B 750A                <1> 	jne _printNumCetakNext
+   221                              <1> 
+   222                              <1> 	; tambahkan tanda '-' jika nilai lebih kecil dari 0
+   223 0000011D C681[09000000]2D    <1> 	mov byte [_printNumStr + ecx], '-'
+   224 00000124 83E901              <1> 	sub ecx, 1
+   225                              <1> 
+   226                              <1> 
+   227                              <1> _printNumCetakNext:
+   228                              <1> 
+   229                              <1> 	; menghitung panjang angka yang dicetak
+   230 00000127 BAFF000000          <1> 	mov edx, _printNumStrLen
+   231 0000012C 29CA                <1> 	sub edx, ecx
+   232 0000012E 83EA01              <1> 	sub edx, 1
+   233                              <1> 
+   234                              <1> 	; mencari alamat indeks pertama yang akan dicetak
+   235 00000131 81C1[09000000]      <1> 	add ecx, _printNumStr
+   236 00000137 83C101              <1> 	add ecx, 1
+   237                              <1> 
+   238                              <1> 	; perintah print ke stdout
+   239 0000013A B804000000          <1> 	mov eax, 4
+   240 0000013F BB01000000          <1> 	mov ebx, 1
+   241 00000144 CD80                <1> 	int 0x80
+   242                              <1> 
+   243                              <1> _printNumExit:
+   244                              <1> 
+   245 00000146 C3                  <1> 	ret
+   246                                  %include 'fungsi/importfile.asm'
+   247                              <1> export:
+   248                              <1> 
+   249                              <1> ;file db 'file.txt'
+   250                              <1> 
+   251 00000147 B808000000          <1> mov eax, 8
+   252 0000014C BB[0C000000]        <1> mov ebx, file
+   253 00000151 B909030000          <1> mov ecx, 0777
+   254 00000156 CD80                <1> int 0x80
+   255 00000158 A3[48010000]        <1> mov [fdout], eax 
+   256                              <1> 
+   257 0000015D B804000000          <1> mov eax, 4
+   258 00000162 BAE8030000          <1> mov edx, leng
+   259 00000167 B9[FC010000]        <1> mov ecx, isi_nama
+   260 0000016C 8B1D[48010000]      <1> mov ebx, [fdout]
+   261 00000172 CD80                <1> int 0x80
+   262                              <1> 
+   263 00000174 A1[AC010000]        <1> mov eax, [result4]
+   264 00000179 8B1D[48010000]      <1> mov ebx, [fdout]
+   265 0000017F E834FFFFFF          <1> call printNum
+   266 00000184 CD80                <1> int 0x80
+   267                              <1> 
+   268 00000186 B806000000          <1> mov eax, 6
+   269 0000018B 8B1D[48010000]      <1> mov ebx, [fdout]
+   270 00000191 CD80                <1> int 0x80
+   271                              <1> 
+   272 00000193 C3                  <1> ret
+   273                              <1> 
+   274                                  %include 'fungsi/inputan.asm'
+   275                              <1> input:
+   276                              <1> 
+   277 00000194 B8[C9010000]        <1> 	mov eax, bb
+   278 00000199 BB01000000          <1> 	mov ebx, 1
+   279 0000019E E874FEFFFF          <1> 	call printStr
+   280                              <1> 	
+   281 000001A3 68[08010000]        <1> 	push no1
+   282 000001A8 68[5B050000]        <1>     push format
+   283 000001AD E8(00000000)        <1>     call scanf
+   284 000001B2 83C408              <1>     add esp, 8
+   285                              <1>     
+   286                              <1>     ;mov eax,[no1]
+   287                              <1>     ;cmp byte[no1], 65
+   288                              <1>     ;je exit
+   289                              <1>     
+   290 000001B5 B8[E7010000]        <1>     mov eax, tb
+   291 000001BA BB01000000          <1> 	mov ebx, 1
+   292 000001BF E853FEFFFF          <1> 	call printStr
+   293                              <1> 	
+   294 000001C4 68[18010000]        <1> 	push no2
+   295 000001C9 68[5B050000]        <1>     push format
+   296 000001CE E8(00000000)        <1>     call scanf
+   297 000001D3 83C408              <1>     add esp, 8
+   298                              <1> 	;call scanNum
+   299                              <1> 	;mov dword [no2], eax
+   300                              <1>     
+   301 000001D6 B8[06020000]        <1>     mov eax, um
+   302 000001DB BB01000000          <1> 	mov ebx, 1
+   303 000001E0 E832FEFFFF          <1> 	call printStr
+   304                              <1> 	
+   305 000001E5 68[28010000]        <1> 	push no3
+   306 000001EA 68[5B050000]        <1>     push format
+   307 000001EF E8(00000000)        <1>     call scanf
+   308 000001F4 83C408              <1>     add esp, 8
+   309                              <1> 	;call scanNum
+   310                              <1> 	;mov dword [no3], eax
+   311                              <1>     
+   312 000001F7 C3                  <1>    ret
+   313                                  %include 'fungsi/aktivitas.asm'
+   314                              <1> p_aktivitas:
+   315                              <1> 		
+   316 000001F8 B8[BA020000]        <1> 		mov eax,akt1
+   317 000001FD BB01000000          <1> 		mov ebx, 1
+   318 00000202 E810FEFFFF          <1> 		call printStr
+   319                              <1> 		
+   320 00000207 B8[9A040000]        <1> 		mov eax,akt
+   321 0000020C BB01000000          <1> 		mov ebx, 1
+   322 00000211 E801FEFFFF          <1> 		call printStr
+   323                              <1> 		
+   324 00000216 E82CFEFFFF          <1> 		call scanNum
+   325 0000021B A3[40010000]        <1> 		mov dword [n], eax
+   326                              <1> 		
+   327 00000220 C3                  <1> 		ret
+   328                                  %include 'fungsi/acNum1.asm'
+   329                              <1> bmr_l_mifflin:
+   330                              <1> 
+   331 00000221 DD05[91080000]      <1> 	fld qword[weight]
+   332 00000227 DD1D[38010000]      <1> 	fstp qword[tmp]
+   333                              <1> 
+   334 0000022D D905[08010000]      <1> 	fld dword[no1]
+   335 00000233 DD05[38010000]      <1>     fld qword[tmp]
+   336 00000239 DEC9                <1>     fmul
+   337 0000023B DD1D[6C010000]      <1>     fstp qword[result]
+   338                              <1> 	;mov ebx, result
+   339                              <1> 	
+   340 00000241 DD05[99080000]      <1> 	fld qword[height]
+   341 00000247 DD1D[38010000]      <1> 	fstp qword[tmp]
+   342                              <1> 
+   343 0000024D D905[18010000]      <1> 	fld dword[no2]
+   344 00000253 DD05[38010000]      <1>     fld qword[tmp]
+   345 00000259 DEC9                <1>     fmul
+   346 0000025B DD1D[7C010000]      <1>     fstp qword[result1]
+   347                              <1> 	;mov eax,result1
+   348                              <1> 	
+   349 00000261 DD05[A1080000]      <1> 	fld qword[age]
+   350 00000267 DD1D[38010000]      <1> 	fstp qword[tmp]
+   351                              <1> 	
+   352 0000026D D905[28010000]      <1> 	fld dword[no3]
+   353 00000273 DD05[38010000]      <1> 	fld qword[tmp]
+   354 00000279 DEC9                <1> 	fmul
+   355 0000027B DD1D[8C010000]      <1> 	fstp qword[result2]
+   356                              <1> 	
+   357 00000281 DD05[6C010000]      <1> 	fld qword[result]
+   358 00000287 DD05[7C010000]      <1> 	fld qword[result1]
+   359 0000028D DEC1                <1> 	fadd
+   360 0000028F DD1D[9C010000]      <1>     fstp qword[result3]
+   361                              <1> 	
+   362 00000295 DD05[9C010000]      <1> 	fld qword[result3]
+   363 0000029B DD05[8C010000]      <1> 	fld qword[result2]
+   364 000002A1 DEE9                <1> 	fsub
+   365 000002A3 DD1D[AC010000]      <1>     fstp qword[result4]
+   366                              <1> 	
+   367 000002A9 DD05[AC010000]      <1> 	fld qword[result4]
+   368 000002AF DD05[38010000]      <1> 	fld qword[tmp]
+   369 000002B5 DEC1                <1> 	fadd
+   370 000002B7 DD1D[AC010000]      <1> 	fstp qword[result4]
+   371                              <1> 	
+   372 000002BD FF35[B0010000]      <1>     push dword[result4+4]
+   373 000002C3 FF35[AC010000]      <1>     push dword[result4]
+   374 000002C9 68[B9040000]        <1>     push mbr
+   375 000002CE E8(00000000)        <1>     call printf
+   376 000002D3 83C40C              <1>     add esp, 12
+   377                              <1>     
+   378 000002D6 B804000000          <1>     mov eax, 4
+   379 000002DB BB01000000          <1>     mov ebx, 1
+   380 000002E0 B9[F6040000]        <1>     mov ecx, z
+   381 000002E5 BA65000000          <1>     mov edx, z_leng
+   382 000002EA CD80                <1>     int 0x80
+   383                              <1> 	
+   384 000002EC C3                  <1> ret
+   385                                  %include 'fungsi/acNum2.asm'
+   386                              <1> bmr_p_mifflin:
+   387                              <1> 
+   388 000002ED DD05[91080000]      <1> 	fld qword[weight]
+   389 000002F3 DD1D[38010000]      <1> 	fstp qword[tmp]
+   390                              <1> 
+   391 000002F9 D905[08010000]      <1> 	fld dword[no1]
+   392 000002FF DD05[38010000]      <1>     fld qword[tmp]
+   393 00000305 DEC9                <1>     fmul
+   394 00000307 DD1D[6C010000]      <1>     fstp qword[result]
+   395                              <1> 	;mov ebx, result
+   396                              <1> 	
+   397 0000030D DD05[99080000]      <1> 	fld qword[height]
+   398 00000313 DD1D[38010000]      <1> 	fstp qword[tmp]
+   399                              <1> 
+   400 00000319 D905[18010000]      <1> 	fld dword[no2]
+   401 0000031F DD05[38010000]      <1>     fld qword[tmp]
+   402 00000325 DEC9                <1>     fmul
+   403 00000327 DD1D[7C010000]      <1>     fstp qword[result1]
+   404                              <1> 	;mov eax,result1
+   405                              <1> 	
+   406 0000032D DD05[A1080000]      <1> 	fld qword[age]
+   407 00000333 DD1D[38010000]      <1> 	fstp qword[tmp]
+   408                              <1> 	
+   409 00000339 D905[28010000]      <1> 	fld dword[no3]
+   410 0000033F DD05[38010000]      <1> 	fld qword[tmp]
+   411 00000345 DEC9                <1> 	fmul
+   412 00000347 DD1D[8C010000]      <1> 	fstp qword[result2]
+   413                              <1> 	
+   414 0000034D DD05[6C010000]      <1> 	fld qword[result]
+   415 00000353 DD05[7C010000]      <1> 	fld qword[result1]
+   416 00000359 DEC1                <1> 	fadd
+   417 0000035B DD1D[9C010000]      <1>     fstp qword[result3]
+   418                              <1> 	
+   419 00000361 DD05[9C010000]      <1> 	fld qword[result3]
+   420 00000367 DD05[8C010000]      <1> 	fld qword[result2]
+   421 0000036D DEE9                <1> 	fsub
+   422 0000036F DD1D[AC010000]      <1>     fstp qword[result4]
+   423                              <1> 	
+   424 00000375 DD05[A9080000]      <1> 	fld qword[s]
+   425 0000037B DD1D[38010000]      <1> 	fstp qword[tmp]
+   426                              <1> 	
+   427 00000381 DD05[AC010000]      <1> 	fld qword[result4]
+   428 00000387 DD05[38010000]      <1> 	fld qword[tmp]
+   429 0000038D DEE9                <1> 	fsub
+   430 0000038F DD1D[AC010000]      <1> 	fstp qword[result4]
+   431                              <1> 	
+   432 00000395 FF35[B0010000]      <1>     push dword[result4+4]
+   433 0000039B FF35[AC010000]      <1>     push dword[result4]
+   434 000003A1 68[B9040000]        <1>     push mbr
+   435 000003A6 E8(00000000)        <1>     call printf
+   436 000003AB 83C40C              <1>     add esp, 12
+   437                              <1> 	
+   438 000003AE B804000000          <1> 	mov eax, 4
+   439 000003B3 BB01000000          <1>     mov ebx, 1
+   440 000003B8 B9[F6040000]        <1>     mov ecx, z
+   441 000003BD BA65000000          <1>     mov edx, z_leng
+   442 000003C2 CD80                <1>     int 0x80
+   443 000003C4 C3                  <1> ret
+   444                                  %include 'fungsi/acNum3.asm'
+   445                              <1> bmr_l_bennedict:
+   446 000003C5 DD05[C1080000]      <1> 	fld qword[weightBL]
+   447 000003CB DD1D[38010000]      <1> 	fstp qword[tmp]
+   448                              <1> 
+   449 000003D1 D905[08010000]      <1> 	fld dword[no1]
+   450 000003D7 DD05[38010000]      <1>     fld qword[tmp]
+   451 000003DD DEC9                <1>     fmul
+   452 000003DF DD1D[6C010000]      <1>     fstp qword[result]
+   453                              <1> 	;mov ebx, result
+   454                              <1> 	
+   455 000003E5 DD05[C9080000]      <1> 	fld qword[heightBL]
+   456 000003EB DD1D[38010000]      <1> 	fstp qword[tmp]
+   457                              <1> 
+   458 000003F1 D905[18010000]      <1> 	fld dword[no2]
+   459 000003F7 DD05[38010000]      <1>     fld qword[tmp]
+   460 000003FD DEC9                <1>     fmul
+   461 000003FF DD1D[7C010000]      <1>     fstp qword[result1]
+   462                              <1> 	;mov eax,result1
+   463                              <1> 	
+   464 00000405 DD05[D1080000]      <1> 	fld qword[ageBL]
+   465 0000040B DD1D[38010000]      <1> 	fstp qword[tmp]
+   466                              <1> 	
+   467 00000411 D905[28010000]      <1> 	fld dword[no3]
+   468 00000417 DD05[38010000]      <1> 	fld qword[tmp]
+   469 0000041D DEC9                <1> 	fmul
+   470 0000041F DD1D[8C010000]      <1> 	fstp qword[result2]
+   471                              <1> 	
+   472 00000425 DD05[6C010000]      <1> 	fld qword[result]
+   473 0000042B DD05[7C010000]      <1> 	fld qword[result1]
+   474 00000431 DEC1                <1> 	fadd
+   475 00000433 DD1D[9C010000]      <1>     fstp qword[result3]
+   476                              <1> 	
+   477 00000439 DD05[9C010000]      <1> 	fld qword[result3]
+   478 0000043F DD05[8C010000]      <1> 	fld qword[result2]
+   479 00000445 DEE9                <1> 	fsub
+   480 00000447 DD1D[AC010000]      <1>     fstp qword[result4]
+   481                              <1> 	
+   482 0000044D DD05[B1080000]      <1> 	fld qword[rmbl]
+   483 00000453 DD1D[38010000]      <1> 	fstp qword[tmp]
+   484                              <1> 	
+   485 00000459 DD05[AC010000]      <1> 	fld qword[result4]
+   486 0000045F DD05[38010000]      <1> 	fld qword[tmp]
+   487 00000465 DEC1                <1> 	fadd
+   488 00000467 DD1D[AC010000]      <1> 	fstp qword[result4]
+   489                              <1> 	
+   490 0000046D FF35[B0010000]      <1>     push dword[result4+4]
+   491 00000473 FF35[AC010000]      <1>     push dword[result4]
+   492 00000479 68[B9040000]        <1>     push mbr
+   493 0000047E E8(00000000)        <1>     call printf
+   494 00000483 83C40C              <1>     add esp, 12
+   495                              <1> 	
+   496 00000486 B804000000          <1> 	mov eax, 4
+   497 0000048B BB01000000          <1>     mov ebx, 1
+   498 00000490 B9[F6040000]        <1>     mov ecx, z
+   499 00000495 BA65000000          <1>     mov edx, z_leng
+   500 0000049A CD80                <1>     int 0x80
+   501                              <1>     
+   502 0000049C C3                  <1> ret
+   503                              <1> 
+   504                                  %include 'fungsi/acNum4.asm'
+   505                              <1> bmr_p_bennedict:
+   506 0000049D DD05[D9080000]      <1> 	fld qword[weightBP]
+   507 000004A3 DD1D[38010000]      <1> 	fstp qword[tmp]
+   508                              <1> 
+   509 000004A9 D905[08010000]      <1> 	fld dword[no1]
+   510 000004AF DD05[38010000]      <1>     fld qword[tmp]
+   511 000004B5 DEC9                <1>     fmul
+   512 000004B7 DD1D[6C010000]      <1>     fstp qword[result]
+   513                              <1> 	;mov ebx, result
+   514                              <1> 	
+   515 000004BD DD05[E1080000]      <1> 	fld qword[heightBP]
+   516 000004C3 DD1D[38010000]      <1> 	fstp qword[tmp]
+   517                              <1> 
+   518 000004C9 D905[18010000]      <1> 	fld dword[no2]
+   519 000004CF DD05[38010000]      <1>     fld qword[tmp]
+   520 000004D5 DEC9                <1>     fmul
+   521 000004D7 DD1D[7C010000]      <1>     fstp qword[result1]
+   522                              <1> 	;mov eax,result1
+   523                              <1> 	
+   524 000004DD DD05[E9080000]      <1> 	fld qword[ageBP]
+   525 000004E3 DD1D[38010000]      <1> 	fstp qword[tmp]
+   526                              <1> 	
+   527 000004E9 D905[28010000]      <1> 	fld dword[no3]
+   528 000004EF DD05[38010000]      <1> 	fld qword[tmp]
+   529 000004F5 DEC9                <1> 	fmul
+   530 000004F7 DD1D[8C010000]      <1> 	fstp qword[result2]
+   531                              <1> 	
+   532 000004FD DD05[6C010000]      <1> 	fld qword[result]
+   533 00000503 DD05[7C010000]      <1> 	fld qword[result1]
+   534 00000509 DEC1                <1> 	fadd
+   535 0000050B DD1D[9C010000]      <1>     fstp qword[result3]
+   536                              <1> 	
+   537 00000511 DD05[9C010000]      <1> 	fld qword[result3]
+   538 00000517 DD05[8C010000]      <1> 	fld qword[result2]
+   539 0000051D DEE9                <1> 	fsub
+   540 0000051F DD1D[AC010000]      <1>     fstp qword[result4]
+   541                              <1> 	
+   542 00000525 DD05[B9080000]      <1> 	fld qword[rmbp]
+   543 0000052B DD1D[38010000]      <1> 	fstp qword[tmp]
+   544                              <1> 	
+   545 00000531 DD05[AC010000]      <1> 	fld qword[result4]
+   546 00000537 DD05[38010000]      <1> 	fld qword[tmp]
+   547 0000053D DEC1                <1> 	fadd
+   548 0000053F DD1D[AC010000]      <1> 	fstp qword[result4]
+   549                              <1> 	
+   550 00000545 FF35[B0010000]      <1>     push dword[result4+4]
+   551 0000054B FF35[AC010000]      <1>     push dword[result4]
+   552 00000551 68[B9040000]        <1>     push mbr
+   553 00000556 E8(00000000)        <1>     call printf
+   554 0000055B 83C40C              <1>     add esp, 12
+   555                              <1> 	
+   556 0000055E B804000000          <1> 	mov eax, 4
+   557 00000563 BB01000000          <1>     mov ebx, 1
+   558 00000568 B9[F6040000]        <1>     mov ecx, z
+   559 0000056D BA65000000          <1>     mov edx, z_leng
+   560 00000572 CD80                <1>     int 0x80
+   561                              <1>     
+   562 00000574 C3                  <1> ret
+   563                                  %include 'fungsi/hasil.asm'
+   564                              <1> hasil:
+   565                              <1> 	
+   566 00000575 DD05[51080000]      <1> 	fld qword[karbhdrat]
+   567 0000057B DD1D[38010000]      <1> 	fstp qword[tmp]
+   568                              <1> 
+   569 00000581 DD05[AC010000]      <1> 	fld qword[result4]
+   570 00000587 DD05[38010000]      <1>     fld qword[tmp]
+   571 0000058D DEC9                <1>     fmul
+   572 0000058F DD1D[BC010000]      <1>     fstp qword[result5]
+   573                              <1> 	
+   574 00000595 DD05[59080000]      <1> 	fld qword[prtein]
+   575 0000059B DD1D[38010000]      <1> 	fstp qword[tmp]
+   576                              <1> 
+   577 000005A1 DD05[AC010000]      <1> 	fld qword[result4]
+   578 000005A7 DD05[38010000]      <1>     fld qword[tmp]
+   579 000005AD DEC9                <1>     fmul
+   580 000005AF DD1D[CC010000]      <1>     fstp qword[result6]
+   581                              <1> 	
+   582 000005B5 DD05[61080000]      <1> 	fld qword[lmk]
+   583 000005BB DD1D[38010000]      <1> 	fstp qword[tmp]
+   584                              <1> 
+   585 000005C1 DD05[AC010000]      <1> 	fld qword[result4]
+   586 000005C7 DD05[38010000]      <1>     fld qword[tmp]
+   587 000005CD DEC9                <1>     fmul
+   588 000005CF DD1D[DC010000]      <1>     fstp qword[result7]
+   589                              <1> 	
+   590 000005D5 B804000000          <1> 	mov eax, 4
+   591 000005DA BB01000000          <1> 	mov ebx, 1
+   592 000005DF B9[5E050000]        <1> 	mov ecx, hn
+   593 000005E4 BA14000000          <1> 	mov edx, hn_leng
+   594 000005E9 CD80                <1> 	int 0x80
+   595                              <1> 	
+   596 000005EB B804000000          <1> 	mov eax, 4
+   597 000005F0 BAE8030000          <1> 	mov edx, leng
+   598 000005F5 B9[FC010000]        <1> 	mov ecx, isi_nama
+   599 000005FA BB01000000          <1> 	mov ebx, 1
+   600 000005FF CD80                <1> 	int 0x80
+   601                              <1> 	
+   602 00000601 B8[72050000]        <1> 	mov eax, jenkel
+   603 00000606 BB01000000          <1>     mov ebx, 1
+   604 0000060B E807FAFFFF          <1>     call printStr
+   605                              <1>     
+   606 00000610 A1[44010000]        <1> 	mov eax, [j]
+   607 00000615 BB01000000          <1> 	mov ebx, 1
+   608 0000061A E899FAFFFF          <1> 	call printNum
+   609                              <1> 	
+   610                              <1> 	; mengubah 32 bit menjadi 64bit
+   611 0000061F D905[08010000]      <1>     fld dword[no1]
+   612 00000625 DD1D[4C010000]      <1>     fstp qword[floatNum]
+   613                              <1>     
+   614 0000062B FF35[50010000]      <1> 	push dword[floatNum+4]
+   615 00000631 FF35[4C010000]      <1> 	push dword[floatNum]
+   616 00000637 68[87050000]        <1> 	push bba
+   617 0000063C E8(00000000)        <1> 	call printf
+   618 00000641 83C40C              <1> 	add esp, 12
+   619                              <1> 
+   620 00000644 D905[18010000]      <1> 	fld dword[no2]
+   621 0000064A DD1D[4C010000]      <1>     fstp qword[floatNum]
+   622                              <1> 
+   623 00000650 FF35[50010000]      <1> 	push dword[floatNum+4]
+   624 00000656 FF35[4C010000]      <1> 	push dword[floatNum]
+   625 0000065C 68[AD050000]        <1> 	push tba
+   626 00000661 E8(00000000)        <1> 	call printf
+   627 00000666 83C40C              <1> 	add esp, 12
+   628                              <1> 	
+   629 00000669 D905[28010000]      <1> 	fld dword[no3]
+   630 0000066F DD1D[4C010000]      <1>     fstp qword[floatNum]
+   631                              <1>     
+   632 00000675 FF35[50010000]      <1> 	push dword[floatNum+4]
+   633 0000067B FF35[4C010000]      <1> 	push dword[floatNum]
+   634 00000681 68[D2050000]        <1> 	push ua
+   635 00000686 E8(00000000)        <1> 	call printf
+   636 0000068B 83C40C              <1> 	add esp, 12
+   637                              <1> 	
+   638 0000068E FF35[B0010000]      <1> 	push dword[result4+4]
+   639 00000694 FF35[AC010000]      <1>     push dword[result4]
+   640 0000069A 68[F2050000]        <1>     push keb_kalori
+   641 0000069F E8(00000000)        <1>     call printf
+   642 000006A4 83C40C              <1>     add esp, 12
+   643                              <1>     
+   644 000006A7 FF35[C0010000]      <1>     push dword[result5+4]
+   645 000006AD FF35[BC010000]      <1>     push dword[result5]
+   646 000006B3 68[22060000]        <1>     push karbohidrat
+   647 000006B8 E8(00000000)        <1>     call printf
+   648 000006BD 83C40C              <1>     add esp, 12
+   649                              <1>     
+   650 000006C0 FF35[D0010000]      <1>     push dword[result6+4]
+   651 000006C6 FF35[CC010000]      <1>     push dword[result6]
+   652 000006CC 68[46060000]        <1>     push protein
+   653 000006D1 E8(00000000)        <1>     call printf
+   654 000006D6 83C40C              <1>     add esp, 12
+   655                              <1>     
+   656 000006D9 FF35[E0010000]      <1>     push dword[result7+4]
+   657 000006DF FF35[DC010000]      <1>     push dword[result7]
+   658 000006E5 68[66060000]        <1>     push lemak
+   659 000006EA E8(00000000)        <1>     call printf
+   660 000006EF 83C40C              <1>     add esp, 12
+   661                              <1>     
+   662 000006F2 B804000000          <1>     mov eax, 4
+   663 000006F7 BB01000000          <1>     mov ebx, 1
+   664 000006FC B9[85060000]        <1>     mov ecx, penjelasan
+   665 00000701 BAFF000000          <1>     mov edx, pjl_leng
+   666 00000706 CD80                <1>     int 0x80
+   667                              <1> 
+   668 00000708 C3                  <1> ret
+   669                                  %include 'fungsi/inputsalah.asm'
+   670                              <1> in_salah:
+   671                              <1> 	
+   672 00000709 B8[B1070000]        <1> 	mov eax, is
+   673 0000070E BB01000000          <1>     mov ebx, 1
+   674 00000713 E8FFF8FFFF          <1>     call printStr
+   675                              <1> 	
+   676 00000718 83C701              <1> 	add edi, 1
+   677                              <1> 	
+   678 0000071B C3                  <1> 	ret
+   679                              <1> 	
+   680                              <1> in_salahh:
+   681                              <1> 	
+   682 0000071C B8[B1070000]        <1> 	mov eax, is
+   683 00000721 BB01000000          <1>     mov ebx, 1
+   684 00000726 E8ECF8FFFF          <1>     call printStr
+   685                              <1> 	
+   686 0000072B 83C601              <1> 	add esi, 1
+   687                              <1> 	
+   688 0000072E C3                  <1> 	ret
+   689                              <1> 	
+   690                              <1> in_salah1:
+   691                              <1> 	
+   692 0000072F B8[E1070000]        <1> 	mov eax, is1
+   693 00000734 BB01000000          <1>     mov ebx, 1
+   694 00000739 E8D9F8FFFF          <1>     call printStr
+   695                              <1> 	
+   696 0000073E 83C701              <1> 	add edi, 1
+   697                              <1> 	
+   698 00000741 C3                  <1> 	ret
+   699                              <1> 	
+   700                              <1> in_salah2:
+   701 00000742 B8[11080000]        <1> 	mov eax, is2
+   702 00000747 BB01000000          <1>     mov ebx, 1
+   703 0000074C E8C6F8FFFF          <1>     call printStr
+   704                              <1> 	
+   705 00000751 83C701              <1> 	add edi, 1
+   706                              <1> 	
+   707 00000754 C3                  <1> 	ret
+   708                              <1> 	
+   709                              <1> in_salah3:
+   710 00000755 B8[41080000]        <1> 	mov eax, is3
+   711 0000075A BB01000000          <1>     mov ebx, 1
+   712 0000075F E8B3F8FFFF          <1>     call printStr
+   713                              <1> 	
+   714 00000764 83C701              <1> 	add edi, 1
+   715                              <1> 	
+   716 00000767 C3                  <1> 	ret
+   717                              <1> 	
+   718                              <1> in_salah11:
+   719                              <1> 	
+   720 00000768 B8[E1070000]        <1> 	mov eax, is1
+   721 0000076D BB01000000          <1>     mov ebx, 1
+   722 00000772 E8A0F8FFFF          <1>     call printStr
+   723                              <1> 	
+   724 00000777 83C601              <1> 	add esi, 1
+   725                              <1> 	
+   726 0000077A C3                  <1> 	ret
+   727                              <1> 	
+   728                              <1> in_salah22:
+   729 0000077B B8[11080000]        <1> 	mov eax, is2
+   730 00000780 BB01000000          <1>     mov ebx, 1
+   731 00000785 E88DF8FFFF          <1>     call printStr
+   732                              <1> 	
+   733 0000078A 83C601              <1> 	add esi, 1
+   734                              <1> 	
+   735 0000078D C3                  <1> 	ret
+   736                              <1> 	
+   737                              <1> in_salah33:
+   738 0000078E B8[41080000]        <1> 	mov eax, is3
+   739 00000793 BB01000000          <1>     mov ebx, 1
+   740 00000798 E87AF8FFFF          <1>     call printStr
+   741                              <1> 	
+   742 0000079D 83C601              <1> 	add esi, 1
+   743                              <1> 	
+   744 000007A0 C3                  <1> 	ret
+   745                              <1> 	
+   746                              <1> cmp_edi:
+   747 000007A1 83FF01              <1> 	cmp edi, 1
+   748 000007A4 0F84A2030000        <1>     je isl1
+   749                              <1>     
+   750 000007AA 83FF02              <1>     cmp edi, 2
+   751 000007AD 0F84A0030000        <1>     je isl2
+   752                              <1>     
+   753 000007B3 83FF03              <1>     cmp edi, 3
+   754 000007B6 0F849E030000        <1>     je isl3
+   755                              <1> 	
+   756 000007BC C3                  <1> 	ret
+   757                              <1> 
+   758                              <1> cmp_edi1:
+   759 000007BD 83FF01              <1> 	cmp edi, 1
+   760 000007C0 0F8403010000        <1>     je isl4
+   761                              <1>     
+   762 000007C6 83FF02              <1>     cmp edi, 2
+   763 000007C9 0F8404010000        <1>     je isl5
+   764                              <1>     
+   765 000007CF 83FF03              <1>     cmp edi, 3
+   766 000007D2 0F8405010000        <1>     je isl6
+   767                              <1> 	
+   768 000007D8 C3                  <1> 	ret
+   769                              <1> 
+   770                              <1> cmp_edi2:
+   771 000007D9 83FF01              <1> 	cmp edi, 1
+   772 000007DC 0F846A010000        <1>     je isl7
+   773                              <1>     
+   774 000007E2 83FF02              <1>     cmp edi, 2
+   775 000007E5 0F846B010000        <1>     je isl8
+   776                              <1>     
+   777 000007EB 83FF03              <1>     cmp edi, 3
+   778 000007EE 0F846C010000        <1>     je isl9
+   779                              <1> 	
+   780 000007F4 C3                  <1> 	ret
+   781                              <1> 
+   782                              <1> cmp_edi3:
+   783 000007F5 83FF01              <1> 	cmp edi, 1
+   784 000007F8 0F84D1010000        <1>     je isl10
+   785                              <1>     
+   786 000007FE 83FF02              <1>     cmp edi, 2
+   787 00000801 0F84D2010000        <1>     je isl11
+   788                              <1>     
+   789 00000807 83FF03              <1>     cmp edi, 3
+   790 0000080A 0F84D3010000        <1>     je isl12
+   791                              <1> 	
+   792 00000810 C3                  <1> 	ret
+   793                              <1> 	
+   794                              <1> cmp_edi4:
+   795 00000811 83FF01              <1> 	cmp edi, 1
+   796 00000814 0F8438020000        <1>     je isl13
+   797                              <1>     
+   798 0000081A 83FF02              <1>     cmp edi, 2
+   799 0000081D 0F8439020000        <1>     je isl14
+   800                              <1>     
+   801 00000823 83FF03              <1>     cmp edi, 3
+   802 00000826 0F843A020000        <1>     je isl15
+   803                              <1> 	
+   804 0000082C C3                  <1> 	ret
+   805                              <1> 
+   806                              <1> cmp_edi5:
+   807 0000082D 83FE01              <1> 	cmp esi, 1
+   808 00000830 0F84A2030000        <1>     je isl16
+   809                              <1>     
+   810 00000836 83FE02              <1>     cmp esi, 2
+   811 00000839 0F84A0030000        <1>     je isl17
+   812                              <1>     
+   813 0000083F 83FE03              <1>     cmp esi, 3
+   814 00000842 0F849E030000        <1>     je isl18
+   815                              <1> 	
+   816 00000848 C3                  <1> 	ret
+   817                              <1> 
+   818                              <1> cmp_edi6:
+   819 00000849 83FE01              <1> 	cmp esi, 1
+   820 0000084C 0F8469060000        <1>     je isl19
+   821                              <1>     
+   822 00000852 83FE02              <1>     cmp esi, 2
+   823 00000855 0F8467060000        <1>     je isl20
+   824                              <1>     
+   825 0000085B 83FE03              <1>     cmp esi, 3
+   826 0000085E 0F8465060000        <1>     je isl21
+   827                              <1> 	
+   828 00000864 C3                  <1> 	ret
+   829                                  %include 'fungsi/cmp_aktivitas.asm'
+   830                              <1> cmp_aktv:
+   831 00000865 BE01000000          <1> 		mov esi, 1
+   832 0000086A B802000000          <1> 		mov eax, 2
+   833 0000086F BB03000000          <1> 		mov ebx, 3
+   834 00000874 B904000000          <1> 		mov ecx, 4
+   835 00000879 BA05000000          <1> 		mov edx, 5
+   836                              <1> 		
+   837 0000087E 3B35[40010000]      <1> 		cmp esi, [n]
+   838 00000884 0F848D030000        <1> 		je ac1
+   839 0000088A 3B05[40010000]      <1> 		cmp eax, [n]
+   840 00000890 0F84B5030000        <1> 		je ac2
+   841 00000896 3B1D[40010000]      <1> 		cmp ebx, [n]
+   842 0000089C 0F84DD030000        <1> 		je ac3
+   843 000008A2 3B0D[40010000]      <1> 		cmp ecx, [n]
+   844 000008A8 0F8405040000        <1> 		je ac4
+   845 000008AE 3B15[40010000]      <1> 		cmp edx, [n]
+   846 000008B4 0F842D040000        <1> 		je ac5
+   847                              <1> 		
+   848 000008BA E8FEFEFFFF          <1> 	call cmp_edi1
+   849 000008BF E845FEFFFF          <1> 	call in_salah
+   850 000008C4 E929030000          <1> 	jmp f_laki_mifflin
+   851                              <1> 	
+   852                              <1> isl4:
+   853 000008C9 E861FEFFFF          <1> 	call in_salah1 
+   854 000008CE E91F030000          <1> 	jmp f_laki_mifflin
+   855                              <1> 	
+   856                              <1> isl5:
+   857 000008D3 E86AFEFFFF          <1> 	call in_salah2 
+   858 000008D8 E915030000          <1> 	jmp f_laki_mifflin
+   859                              <1> 		
+   860                              <1> isl6:
+   861 000008DD E873FEFFFF          <1> 	call in_salah3
+   862 000008E2 E90B030000          <1> 	jmp f_laki_mifflin
+   863                              <1> 			
+   864 000008E7 C3                  <1> 		ret
+   865                              <1> 		
+   866                              <1> cmp_aktv1:
+   867 000008E8 BE01000000          <1> 		mov esi, 1
+   868 000008ED B802000000          <1> 		mov eax, 2
+   869 000008F2 BB03000000          <1> 		mov ebx, 3
+   870 000008F7 B904000000          <1> 		mov ecx, 4
+   871 000008FC BA05000000          <1> 		mov edx, 5
+   872                              <1> 		
+   873 00000901 3B35[40010000]      <1> 		cmp esi, [n]
+   874 00000907 0F8433040000        <1> 		je acb1
+   875 0000090D 3B05[40010000]      <1> 		cmp eax, [n]
+   876 00000913 0F845B040000        <1> 		je acb2
+   877 00000919 3B1D[40010000]      <1> 		cmp ebx, [n]
+   878 0000091F 0F8483040000        <1> 		je acb3
+   879 00000925 3B0D[40010000]      <1> 		cmp ecx, [n]
+   880 0000092B 0F84AB040000        <1> 		je acb4
+   881 00000931 3B15[40010000]      <1> 		cmp edx, [n]
+   882 00000937 0F84D3040000        <1> 		je acb5
+   883                              <1> 		
+   884 0000093D E897FEFFFF          <1> 	call cmp_edi2
+   885 00000942 E8C2FDFFFF          <1> 	call in_salah
+   886 00000947 E9CF030000          <1> 	jmp f_laki_bennedict
+   887                              <1> 	
+   888                              <1> isl7:
+   889 0000094C E8DEFDFFFF          <1> 	call in_salah1 
+   890 00000951 E9C5030000          <1> 	jmp f_laki_bennedict
+   891                              <1> 	
+   892                              <1> isl8:
+   893 00000956 E8E7FDFFFF          <1> 	call in_salah2 
+   894 0000095B E9BB030000          <1> 	jmp f_laki_bennedict
+   895                              <1> 		
+   896                              <1> isl9:
+   897 00000960 E8F0FDFFFF          <1> 	call in_salah3
+   898 00000965 E9B1030000          <1> 	jmp f_laki_bennedict
+   899 0000096A C3                  <1> 		ret
+   900                              <1> 		
+   901                              <1> cmp_aktv2:
+   902 0000096B BE01000000          <1> 		mov esi, 1
+   903 00000970 B802000000          <1> 		mov eax, 2
+   904 00000975 BB03000000          <1> 		mov ebx, 3
+   905 0000097A B904000000          <1> 		mov ecx, 4
+   906 0000097F BA05000000          <1> 		mov edx, 5
+   907                              <1> 		
+   908 00000984 3B35[40010000]      <1> 		cmp esi, [n]
+   909 0000098A 0F846A050000        <1> 		je acmp1
+   910 00000990 3B05[40010000]      <1> 		cmp eax, [n]
+   911 00000996 0F8492050000        <1> 		je acmp2
+   912 0000099C 3B1D[40010000]      <1> 		cmp ebx, [n]
+   913 000009A2 0F84BA050000        <1> 		je acmp3
+   914 000009A8 3B0D[40010000]      <1> 		cmp ecx, [n]
+   915 000009AE 0F84E2050000        <1> 		je acmp4
+   916 000009B4 3B15[40010000]      <1> 		cmp edx, [n]
+   917 000009BA 0F840A060000        <1> 		je acmp5
+   918                              <1> 		
+   919 000009C0 E830FEFFFF          <1> 	call cmp_edi3
+   920 000009C5 E83FFDFFFF          <1> 	call in_salah
+   921 000009CA E906050000          <1> 	jmp f_perempuan_mifflin
+   922                              <1> 	
+   923                              <1> isl10:
+   924 000009CF E85BFDFFFF          <1> 	call in_salah1 
+   925 000009D4 E9FC040000          <1> 	jmp f_perempuan_mifflin
+   926                              <1> 	
+   927                              <1> isl11:
+   928 000009D9 E864FDFFFF          <1> 	call in_salah2 
+   929 000009DE E9F2040000          <1> 	jmp f_perempuan_mifflin
+   930                              <1> 		
+   931                              <1> isl12:
+   932 000009E3 E86DFDFFFF          <1> 	call in_salah3
+   933 000009E8 E9E8040000          <1> 	jmp f_perempuan_mifflin
+   934                              <1> 	
+   935 000009ED C3                  <1> 		ret
+   936                              <1> 
+   937                              <1> cmp_aktv3:
+   938 000009EE BE01000000          <1> 		mov esi, 1
+   939 000009F3 B802000000          <1> 		mov eax, 2
+   940 000009F8 BB03000000          <1> 		mov ebx, 3
+   941 000009FD B904000000          <1> 		mov ecx, 4
+   942 00000A02 BA05000000          <1> 		mov edx, 5
+   943                              <1> 		
+   944 00000A07 3B35[40010000]      <1> 		cmp esi, [n]
+   945 00000A0D 0F8410060000        <1> 		je acbp1
+   946 00000A13 3B05[40010000]      <1> 		cmp eax, [n]
+   947 00000A19 0F8438060000        <1> 		je acbp2
+   948 00000A1F 3B1D[40010000]      <1> 		cmp ebx, [n]
+   949 00000A25 0F8460060000        <1> 		je acbp3
+   950 00000A2B 3B0D[40010000]      <1> 		cmp ecx, [n]
+   951 00000A31 0F8485060000        <1> 		je acbp4
+   952 00000A37 3B15[40010000]      <1> 		cmp edx, [n]
+   953 00000A3D 0F84AA060000        <1> 		je acbp5
+   954                              <1> 		
+   955 00000A43 E8C9FDFFFF          <1> 	call cmp_edi4
+   956 00000A48 E8BCFCFFFF          <1> 	call in_salah
+   957 00000A4D E9AC050000          <1> 	jmp f_perempuan_bennedict
+   958                              <1> 	
+   959                              <1> isl13:
+   960 00000A52 E8D8FCFFFF          <1> 	call in_salah1 
+   961 00000A57 E9A2050000          <1> 	jmp f_perempuan_bennedict
+   962                              <1> 	
+   963                              <1> isl14:
+   964 00000A5C E8E1FCFFFF          <1> 	call in_salah2 
+   965 00000A61 E998050000          <1> 	jmp f_perempuan_bennedict
+   966                              <1> 		
+   967                              <1> isl15:
+   968 00000A66 E8EAFCFFFF          <1> 	call in_salah3
+   969 00000A6B E98E050000          <1> 	jmp f_perempuan_bennedict
+   970                              <1> 	
+   971 00000A70 C3                  <1> 		ret
+   972                                  %include 'fungsi/ulang.asm'
+   973                              <1> ulang_lagi:
+   974 00000A71 B804000000          <1> 	mov eax, 4
+   975 00000A76 BB01000000          <1> 	mov ebx, 1
+   976 00000A7B B9[84070000]        <1> 	mov ecx, ulang
+   977 00000A80 BA2D000000          <1> 	mov edx, ulang_leng
+   978 00000A85 CD80                <1> 	int 0x80
+   979                              <1> 	
+   980 00000A87 B803000000          <1> 	mov eax, 3
+   981 00000A8C BB01000000          <1> 	mov ebx, 1
+   982 00000A91 B9[3C210000]        <1> 	mov ecx, ulg
+   983 00000A96 BA02000000          <1> 	mov edx, 2
+   984 00000A9B CD80                <1> 	int 0x80
+   985                              <1> 	
+   986 00000A9D 803D[3C210000]79    <1> 	cmp byte[ulg], 121
+   987 00000AA4 7420                <1> 	je nma
+   988 00000AA6 803D[3C210000]6E    <1> 	cmp byte[ulg], 110
+   989 00000AAD 0F846B060000        <1> 	je exit 
+   990                              <1> 
+   991 00000AB3 C3                  <1> ret
+   992                                  
+   993                                  ; menggunakan fungsi dari bahasa C
+   994                                  extern printf
+   995                                  extern scanf
+   996                                  
+   997                                  
+   998                                  section .data
+   999 0000000C 66696C652E74787400      		file db 'file.txt',0
+  1000                                  		
+  1001 00000015 7E7E7E7E7E7E7E7E7E-     		init    db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa
+  1002 0000001E 7E7E7E7E7E7E7E7E7E-
+  1003 00000027 7E7E7E7E7E7E7E7E7E-
+  1004 00000030 7E7E7E7E7E7E7E7E7E-
+  1005 00000039 7E7E7E7E7E7E7E7E7E-
+  1006 00000042 0A                 
+  1007 00000043 7E7E7E7E7E7E7E7E7E-     				db '~~~~~~~~~~ Program Kalkulator Kalori ~~~~~~~~',0xa
+  1008 0000004C 7E2050726F6772616D-
+  1009 00000055 204B616C6B756C6174-
+  1010 0000005E 6F72204B616C6F7269-
+  1011 00000067 207E7E7E7E7E7E7E7E-
+  1012 00000070 0A                 
+  1013 00000071 7E7E204D656E676869-                     db '~~ Menghitung Kebutuhan Kalori Sehari-hari ~~',0xa
+  1014 0000007A 74756E67204B656275-
+  1015 00000083 747568616E204B616C-
+  1016 0000008C 6F7269205365686172-
+  1017 00000095 692D68617269207E7E-
+  1018 0000009E 0A                 
+  1019 0000009F 7E7E7E7E7E7E7E7E7E-                     db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa,0
+  1020 000000A8 7E7E7E7E7E7E7E7E7E-
+  1021 000000B1 7E7E7E7E7E7E7E7E7E-
+  1022 000000BA 7E7E7E7E7E7E7E7E7E-
+  1023 000000C3 7E7E7E7E7E7E7E7E7E-
+  1024 000000CC 0A00               
+  1025                                          ;lop		dd '-Ingin Mencoba Berapa Kali :',0 
+  1026                                                
+  1027 000000CE 2D4D6173756B6B616E-             nama    db '-Masukkan Nama Anda : ', 0
+  1028 000000D7 204E616D6120416E64-
+  1029 000000E0 61203A2000         
+  1030                                          
+  1031 000000E5 7E7E7E7E7E7E7E7E7E-             pjk     db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa
+  1032 000000EE 7E7E7E7E7E7E7E7E7E-
+  1033 000000F7 7E7E7E7E7E7E7E7E7E-
+  1034 00000100 7E7E7E7E7E7E7E0A   
+  1035 00000108 7E7E7E4A656E697320-     				db '~~~Jenis Kelamin : 1. Laki-Laki~~~', 0xa
+  1036 00000111 4B656C616D696E203A-
+  1037 0000011A 20312E204C616B692D-
+  1038 00000123 4C616B697E7E7E0A   
+  1039 0000012B 7E7E7E090920202032-                     db '~~~		   2. Perempuan~~~', 0xa
+  1040 00000134 2E20506572656D7075-
+  1041 0000013D 616E7E7E7E0A       
+  1042 00000143 7E7E7E7E7E7E7E7E7E-                     db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa, 0
+  1043 0000014C 7E7E7E7E7E7E7E7E7E-
+  1044 00000155 7E7E7E7E7E7E7E7E7E-
+  1045 0000015E 7E7E7E7E7E7E7E0A00 
+  1046                                                  
+  1047 00000167 2D50696C6968204A65-             jk      db '-Pilih Jenis Kelamin (1/2) : ', 0
+  1048 00000170 6E6973204B656C616D-
+  1049 00000179 696E2028312F322920-
+  1050 00000182 3A2000             
+  1051 00000185 0A2D2D204A656E6973-             satu 	db 0xa,"-- Jenis Kelamin : Laki-Laki --",0xa, 0
+  1052 0000018E 204B656C616D696E20-
+  1053 00000197 3A204C616B692D4C61-
+  1054 000001A0 6B69202D2D0A00     
+  1055 000001A7 0A2D2D204A656E6973-             dua 	db 0xa,"-- Jenis Kelamin : Perempuan --",0xa, 0
+  1056 000001B0 204B656C616D696E20-
+  1057 000001B9 3A20506572656D7075-
+  1058 000001C2 616E202D2D0A00     
+  1059 000001C9 2D4D6173756B6B616E-             bb 		db '-Masukkan Berat Badan (kg) : ',0
+  1060 000001D2 204265726174204261-
+  1061 000001DB 64616E20286B672920-
+  1062 000001E4 3A2000             
+  1063 000001E7 2D4D6173756B6B616E-             tb		db '-Masukkan Tinggi Badan (cm) : ',0
+  1064 000001F0 2054696E6767692042-
+  1065 000001F9 6164616E2028636D29-
+  1066 00000202 203A2000           
+  1067 00000206 2D4D6173756B6B616E-             um		db '-Masukkan Umur Anda (tahun) : ',0       
+  1068 0000020F 20556D757220416E64-
+  1069 00000218 612028746168756E29-
+  1070 00000221 203A2000           
+  1071 00000225 20466F726D756C6120-     		fo      db ' Formula : 1. Mifflin-St Jeor', 0xa
+  1072 0000022E 3A20312E204D696666-
+  1073 00000237 6C696E2D5374204A65-
+  1074 00000240 6F720A             
+  1075 00000243 09202020322E204861-     				db '	   2. Harris-Benedict', 0xa, 0
+  1076 0000024C 727269732D42656E65-
+  1077 00000255 646963740A00       
+  1078 0000025B 2D50696C696820466F-     		formula	db '-Pilih Formula (1/2): ',0
+  1079 00000264 726D756C612028312F-
+  1080 0000026D 32293A2000         
+  1081 00000272 0A2D2D2D2D20466F72-     		fm	 	db 0xa,'---- Formula Mifflin-St Jeor ----',0xa,0xa,0
+  1082 0000027B 6D756C61204D696666-
+  1083 00000284 6C696E2D5374204A65-
+  1084 0000028D 6F72202D2D2D2D0A0A-
+  1085 00000296 00                 
+  1086 00000297 0A2D2D2D2D466F726D-     		fb		db 0xa,'----Formula Harris-Bennedict----',0xa,0
+  1087 000002A0 756C61204861727269-
+  1088 000002A9 732D42656E6E656469-
+  1089 000002B2 63742D2D2D2D0A00   
+  1090 000002BA 2D2D2D2D2D2D2D2D2D-     		akt1	db "------------------------Aktivitas Sehari-hari--------------------------------",0xa	
+  1091 000002C3 2D2D2D2D2D2D2D2D2D-
+  1092 000002CC 2D2D2D2D2D2D416B74-
+  1093 000002D5 697669746173205365-
+  1094 000002DE 686172692D68617269-
+  1095 000002E7 2D2D2D2D2D2D2D2D2D-
+  1096 000002F0 2D2D2D2D2D2D2D2D2D-
+  1097 000002F9 2D2D2D2D2D2D2D2D2D-
+  1098 00000302 2D2D2D2D2D0A       
+  1099 00000308 2D20312E2053616E67-     				db "- 1. Sangat jarang berolahraga, sehari-hari bekerja dibelakang meja		-",0xa
+  1100 00000311 6174206A6172616E67-
+  1101 0000031A 206265726F6C616872-
+  1102 00000323 6167612C2073656861-
+  1103 0000032C 72692D686172692062-
+  1104 00000335 656B65726A61206469-
+  1105 0000033E 62656C616B616E6720-
+  1106 00000347 6D656A6109092D0A   
+  1107 0000034F 2D20322E204A617261-     				db "- 2. Jarang berolahraga , 1-3 hari dalam seminggu						-",0xa
+  1108 00000358 6E67206265726F6C61-
+  1109 00000361 6872616761202C2031-
+  1110 0000036A 2D3320686172692064-
+  1111 00000373 616C616D2073656D69-
+  1112 0000037C 6E6767750909090909-
+  1113 00000385 092D0A             
+  1114 00000388 2D20332E2043756B75-     				db "- 3. Cukup sering berolahraga, 3-5 hari dalam seminggu					-",0xa
+  1115 00000391 7020736572696E6720-
+  1116 0000039A 6265726F6C61687261-
+  1117 000003A3 67612C20332D352068-
+  1118 000003AC 6172692064616C616D-
+  1119 000003B5 2073656D696E676775-
+  1120 000003BE 09090909092D0A     
+  1121 000003C5 2D20342E2053657269-     				db "- 4. Sering berolahraga, 6-7 hari dalam seminggu						-",0xa
+  1122 000003CE 6E67206265726F6C61-
+  1123 000003D7 68726167612C20362D-
+  1124 000003E0 372068617269206461-
+  1125 000003E9 6C616D2073656D696E-
+  1126 000003F2 676775090909090909-
+  1127 000003FB 2D0A               
+  1128 000003FD 2D20352E2053616E67-     				db "- 5. Sangat sering/seharian berolahraga (marathon),sehari-hari bekerja fisik-",0xa
+  1129 00000406 617420736572696E67-
+  1130 0000040F 2F736568617269616E-
+  1131 00000418 206265726F6C616872-
+  1132 00000421 61676120286D617261-
+  1133 0000042A 74686F6E292C736568-
+  1134 00000433 6172692D6861726920-
+  1135 0000043C 62656B65726A612066-
+  1136 00000445 6973696B2D0A       
+  1137 0000044B 2D2D2D2D2D2D2D2D2D-     				db "-----------------------------------------------------------------------------",0xa,0
+  1138 00000454 2D2D2D2D2D2D2D2D2D-
+  1139 0000045D 2D2D2D2D2D2D2D2D2D-
+  1140 00000466 2D2D2D2D2D2D2D2D2D-
+  1141 0000046F 2D2D2D2D2D2D2D2D2D-
+  1142 00000478 2D2D2D2D2D2D2D2D2D-
+  1143 00000481 2D2D2D2D2D2D2D2D2D-
+  1144 0000048A 2D2D2D2D2D2D2D2D2D-
+  1145 00000493 2D2D2D2D2D0A00     
+  1146 0000049A 50696C696820416B74-     		akt		db 'Pilih Aktivitas (1/2/3/4/5) : ',0
+  1147 000004A3 697669746173202831-
+  1148 000004AC 2F322F332F342F3529-
+  1149 000004B5 203A2000           
+  1150 000004B9 7E7E7E7E7E7E7E7E7E-     		mbr 	db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa
+  1151 000004C2 7E7E7E7E7E7E7E7E7E-
+  1152 000004CB 7E7E7E7E7E7E7E7E7E-
+  1153 000004D4 7E7E7E7E7E0A       
+  1154 000004DA 7E7E20486173696C20-     				db '~~ Hasil BMR 	  : %.3f  ~~',0xa ,0
+  1155 000004E3 424D52200920203A20-
+  1156 000004EC 252E336620207E7E0A-
+  1157 000004F5 00                 
+  1158 000004F6 7E7E7E7E7E7E7E7E7E-     		z		db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa
+  1159 000004FF 7E7E7E7E7E7E7E7E7E-
+  1160 00000508 7E7E7E7E7E7E7E7E7E-
+  1161 00000511 7E7E7E7E7E0A       
+  1162 00000517 7E7E7E7E7E7E7E7E7E-     				db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',0xa,0
+  1163 00000520 7E7E7E7E7E7E7E7E7E-
+  1164 00000529 7E7E7E7E7E7E7E7E7E-
+  1165 00000532 7E7E7E7E7E7E7E7E7E-
+  1166 0000053B 7E7E7E7E7E7E7E7E7E-
+  1167 00000544 7E7E7E7E7E7E7E7E7E-
+  1168 0000054D 7E7E7E7E7E7E7E7E7E-
+  1169 00000556 7E7E7E0A00         
+  1170                                  		z_leng equ $-z
+  1171                                  		
+  1172                                  				;db 'Ini Adalah Total Kalori yang Anda Butuhkan Untuk Menjaga Berat Badan Anda',0xa	
+  1173                                  		
+  1174                                  		;hasil
+  1175                                  		
+  1176                                  		
+  1177                                  		
+  1178                                  		 
+  1179                                  		
+  1180                                  		; format input dari scanf
+  1181 0000055B 256600                  		format      db      '%f', 0
+  1182                                  		
+  1183 0000055E 7E7E204E616D612061-     		hn		db '~~ Nama anda 	  	: ',0
+  1184 00000567 6E646120092020093A-
+  1185 00000570 2000               
+  1186                                  		hn_leng equ $-hn
+  1187 00000572 7E7E204A656E697320-     		jenkel	db '~~ Jenis Kelamin 	: ',0
+  1188 0000057B 4B656C616D696E2009-
+  1189 00000584 3A2000             
+  1190 00000587 0A7E7E204265726174-     		bba		db 0xa,'~~ Berat Badan Anda  	: %.0f					~~',0xa, 0
+  1191 00000590 20426164616E20416E-
+  1192 00000599 64612020093A20252E-
+  1193 000005A2 306609090909097E7E-
+  1194 000005AB 0A00               
+  1195 000005AD 7E7E2054696E676769-     		tba		db '~~ Tinggi Badan Anda 	: %.0f					~~',0xa, 0
+  1196 000005B6 20426164616E20416E-
+  1197 000005BF 646120093A20252E30-
+  1198 000005C8 6609090909097E7E0A-
+  1199 000005D1 00                 
+  1200 000005D2 7E7E20556D75722041-     		ua		db '~~ Umur Anda 	  	: %.0f					~~',0xa, 0
+  1201 000005DB 6E646120092020093A-
+  1202 000005E4 20252E306609090909-
+  1203 000005ED 097E7E0A00         
+  1204                                  		;aktv	db 'Aktivitas Sehari-hari	: ',0xa,0
+  1205 000005F2 7E7E204B6562757475-     		keb_kalori db '~~ Kebutuhan Kalori Perhari Anda :   %.3f			~~', 0xa, 0
+  1206 000005FB 68616E204B616C6F72-
+  1207 00000604 692050657268617269-
+  1208 0000060D 20416E6461203A2020-
+  1209 00000616 20252E33660909097E-
+  1210 0000061F 7E0A00             
+  1211 00000622 7E7E204B6172626F68-     		karbohidrat db '~~ Karbohidrat (55%) 	: %.3f				~~', 0xa,0
+  1212 0000062B 696472617420283535-
+  1213 00000634 252920093A20252E33-
+  1214 0000063D 66090909097E7E0A00 
+  1215 00000646 7E7E2050726F746569-     		protein		db '~~ Protein (15%) 	: %.3f				~~', 0xa,0
+  1216 0000064F 6E2028313525292009-
+  1217 00000658 3A20252E3366090909-
+  1218 00000661 097E7E0A00         
+  1219 00000666 7E7E204C656D616B20-     		lemak		db '~~ Lemak (30%) 		: %.3f				~~', 0xa,0
+  1220 0000066F 28333025292009093A-
+  1221 00000678 20252E336609090909-
+  1222 00000681 7E7E0A00           
+  1223 00000685 7E7E7E7E7E7E7E7E7E-     		penjelasan  db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', 0xa, 0
+  1224 0000068E 7E7E7E7E7E7E7E7E7E-
+  1225 00000697 7E7E7E7E7E7E7E7E7E-
+  1226 000006A0 7E7E7E7E7E7E7E7E7E-
+  1227 000006A9 7E7E7E7E7E7E7E7E7E-
+  1228 000006B2 7E7E7E7E7E7E7E7E7E-
+  1229 000006BB 7E7E7E7E7E7E7E7E7E-
+  1230 000006C4 7E7E7E0A00         
+  1231 000006C9 7E7E20436174617461-     					db '~~ Catatan: Hasil Yang ditampilkan adalah kebutuhan Kalori	~~', 0xa, 0 
+  1232 000006D2 6E3A20486173696C20-
+  1233 000006DB 59616E672064697461-
+  1234 000006E4 6D70696C6B616E2061-
+  1235 000006ED 64616C6168206B6562-
+  1236 000006F6 75747568616E204B61-
+  1237 000006FF 6C6F7269097E7E0A00 
+  1238 00000708 7E7E0920756E74756B-     					db '~~	 untuk menyeimbangkan berat badan anda sekarang		~~', 0xa, 0
+  1239 00000711 206D656E7965696D62-
+  1240 0000071A 616E676B616E206265-
+  1241 00000723 72617420626164616E-
+  1242 0000072C 20616E64612073656B-
+  1243 00000735 6172616E6709097E7E-
+  1244 0000073E 0A00               
+  1245 00000740 7E7E7E7E7E7E7E7E7E-     					db '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', 0xa, 0
+  1246 00000749 7E7E7E7E7E7E7E7E7E-
+  1247 00000752 7E7E7E7E7E7E7E7E7E-
+  1248 0000075B 7E7E7E7E7E7E7E7E7E-
+  1249 00000764 7E7E7E7E7E7E7E7E7E-
+  1250 0000076D 7E7E7E7E7E7E7E7E7E-
+  1251 00000776 7E7E7E7E7E7E7E7E7E-
+  1252 0000077F 7E7E7E0A00         
+  1253                                  		pjl_leng equ $-penjelasan
+  1254                                  		
+  1255 00000784 4170616B616820496E-     		ulang db 'Apakah Ingin Mencoba Perhitungan Lagi(y/n) :', 0
+  1256 0000078D 67696E204D656E636F-
+  1257 00000796 626120506572686974-
+  1258 0000079F 756E67616E204C6167-
+  1259 000007A8 6928792F6E29203A00 
+  1260                                  		ulang_leng equ $-ulang
+  1261 000007B1 496E7075742059616E-     		is		db 'Input Yang Anda Masukkan Salah (3x Perulangan)',0xa,0
+  1262 000007BA 6720416E6461204D61-
+  1263 000007C3 73756B6B616E205361-
+  1264 000007CC 6C6168202833782050-
+  1265 000007D5 6572756C616E67616E-
+  1266 000007DE 290A00             
+  1267 000007E1 496E7075742059616E-     		is1		db 'Input Yang Anda Masukkan Salah (2x Perulangan)',0xa,0
+  1268 000007EA 6720416E6461204D61-
+  1269 000007F3 73756B6B616E205361-
+  1270 000007FC 6C6168202832782050-
+  1271 00000805 6572756C616E67616E-
+  1272 0000080E 290A00             
+  1273 00000811 496E7075742059616E-     		is2		db 'Input Yang Anda Masukkan Salah (1x Perulangan)',0xa,0
+  1274 0000081A 6720416E6461204D61-
+  1275 00000823 73756B6B616E205361-
+  1276 0000082C 6C6168202831782050-
+  1277 00000835 6572756C616E67616E-
+  1278 0000083E 290A00             
+  1279 00000841 50726F6772616D204B-     		is3		db 'Program Keluar',0xa,0
+  1280 0000084A 656C7561720A00     
+  1281                                  		
+  1282                                  		;nilai presentase
+  1283 00000851 9A9999999999E13F        		karbhdrat		dq		0.55
+  1284 00000859 333333333333C33F        		prtein			dq		0.15
+  1285 00000861 333333333333D33F        		lmk				dq		0.30
+  1286                                  		;nilai aktivitas
+  1287 00000869 333333333333F33F        		aktivitas1		dq		1.2
+  1288 00000871 000000000000F63F        		aktivitas2		dq		1.375
+  1289 00000879 CDCCCCCCCCCCF83F        		aktivitas3		dq		1.55
+  1290 00000881 9A9999999999FB3F        		aktivitas4		dq		1.725
+  1291 00000889 666666666666FE3F        		aktivitas5		dq		1.9
+  1292                                  		
+  1293                                  		;nilai rumus mifflin
+  1294 00000891 0000000000002440        		weight		dq 		10.0
+  1295 00000899 0000000000001940        		height		dq 		6.25
+  1296 000008A1 0000000000001440        		age			dq		5.0
+  1297 000008A9 0000000000206440        		s			dq		161.0
+  1298                                  		
+  1299                                  		;nilai rumus bennedict
+  1300 000008B1 AE47E17A149E5040        		rmbl		dq		66.47
+  1301 000008B9 CDCCCCCCCC788440        		rmbp		dq		655.1
+  1302 000008C1 0000000000802B40        		weightBL	dq		13.75
+  1303 000008C9 508D976E12031440        		heightBL	dq		5.003
+  1304 000008D1 0000000000001B40        		ageBL		dq		6.75
+  1305 000008D9 1F85EB51B81E2340        		weightBP	dq		9.56
+  1306 000008E1 713D0AD7A370FD3F        		heightBP	dq		1.84
+  1307 000008E9 AE47E17A14AE1240        		ageBP		dq		4.67
+  1308                                  		
+  1309                                  	leng equ 1000	
+  1310                                  	
+  1311                                  	;variabel untuk input salah
+  1312 000008F1 04000000                	vloop	dd 	4
+  1313 000008F5 41000000                	vloop1	dd	65
+  1314                                  		
+  1315                                      ; untuk clear screen
+  1316 000008F9 1B5B481B5B324A00            clr_scr     db      27, '[H', 27, '[2J', 0
+  1317                                      len_clr_scr equ     $-clr_scr
+  1318                                  
+  1319                                  	
+  1320                                  section .bss
+  1321                                  	; variabel sementara
+  1322 00000108 <res 00000010>              no1  resd    4
+  1323 00000118 <res 00000010>              no2  resd    4
+  1324 00000128 <res 00000010>              no3  resd	 4
+  1325 00000138 <res 00000008>          	tmp  resq 	 1
+  1326                                  	;vloop resd	 4	
+  1327                                  	
+  1328                                  	;variabel perbandingan
+  1329 00000140 <res 00000004>              n 	resd 	1
+  1330 00000144 <res 00000004>              j	resd 	1
+  1331                                      
+  1332 00000148 <res 00000004>              fdout resd 1
+  1333                                      
+  1334                                      ; variabel untuk menyimpan data yang akan di print
+  1335 0000014C <res 00000020>              floatNum    resq    4
+  1336                                      
+  1337                                      ; variabel menyimpan perhitungan
+  1338 0000016C <res 00000010>              result  resd    4
+  1339 0000017C <res 00000010>              result1 resd	4
+  1340 0000018C <res 00000010>              result2 resd	4
+  1341 0000019C <res 00000010>              result3 resd 	4
+  1342 000001AC <res 00000010>              result4 resd	4
+  1343 000001BC <res 00000010>          	result5 resd	4
+  1344 000001CC <res 00000010>          	result6 resd	4
+  1345 000001DC <res 00000010>          	result7 resd	4
+  1346 000001EC <res 00000010>          	result8 resd	4
+  1347                                  	
+  1348 000001FC <res 00001F40>          	isi_nama resq leng
+  1349 0000213C <res 00000002>          	ulg		resb	2
+  1350                                  	
+  1351                                  section .text
+  1352                                  global main
+  1353                                  
+  1354                                  main:
+  1355                                  	; clear screen
+  1356 00000AB4 E847F5FFFF                  call clrScr
+  1357                                  	
+  1358                                      ; print inisiasi
+  1359 00000AB9 68[15000000]                push init
+  1360 00000ABE E8(00000000)                call printf
+  1361 00000AC3 83C404                      add esp, 4
+  1362                                  
+  1363                                  nma:	
+  1364 00000AC6 B8[CE000000]            	mov eax, nama
+  1365 00000ACB BB01000000                  mov ebx, 1
+  1366 00000AD0 E842F5FFFF                  call printStr
+  1367                                  	
+  1368                                  	;scan nama, simpan di variabel isi_nama
+  1369 00000AD5 B803000000              	mov eax, 3
+  1370 00000ADA BB01000000                  mov ebx, 1
+  1371 00000ADF B9[FC010000]                mov ecx, isi_nama
+  1372 00000AE4 BAE8030000                  mov edx, leng
+  1373 00000AE9 CD80                        int 0x80
+  1374                                      
+  1375                                      ;print inisiasi jk  
+  1376 00000AEB 68[E5000000]                push pjk
+  1377 00000AF0 E8(00000000)                call printf
+  1378 00000AF5 83C404                      add esp, 4
+  1379                                     
+  1380 00000AF8 BF00000000              	mov edi, 0
+  1381                                  	
+  1382                                  	
+  1383                                  pilih_jk:
+  1384 00000AFD 3B3D[F1080000]          	cmp edi,[vloop]
+  1385 00000B03 0F8415060000            	je exit
+  1386                                  
+  1387 00000B09 B8[67010000]            	mov eax, jk
+  1388 00000B0E BB01000000                  mov ebx, 1
+  1389 00000B13 E8FFF4FFFF                  call printStr	
+  1390                                      
+  1391                                      ; scan jk
+  1392 00000B18 E82AF5FFFF                  call scanNum
+  1393 00000B1D A3[44010000]                mov dword [j], eax
+  1394 00000B22 BB01000000                  mov ebx, 1
+  1395 00000B27 B802000000                  mov eax, 2
+  1396                                      
+  1397                                      ;cmp jk (laki-laki/perempuan)
+  1398 00000B2C 3B1D[44010000]              cmp ebx, [j]
+  1399 00000B32 742D                        je laki
+  1400 00000B34 3B05[44010000]              cmp eax, [j]
+  1401 00000B3A 0F8404030000                je perempuan
+  1402                                      
+  1403                                      ; cmp jika inputan salah
+  1404 00000B40 E85CFCFFFF                  call cmp_edi
+  1405 00000B45 E8BFFBFFFF              	call in_salah
+  1406 00000B4A EBB1                    	jmp pilih_jk
+  1407                                  	
+  1408                                  isl1:
+  1409 00000B4C E8DEFBFFFF              	call in_salah1 
+  1410 00000B51 EBAA                    	jmp pilih_jk
+  1411                                  	
+  1412                                  isl2:
+  1413 00000B53 E8EAFBFFFF              	call in_salah2 
+  1414 00000B58 EBA3                    	jmp pilih_jk
+  1415                                  		
+  1416                                  isl3:
+  1417 00000B5A E8F6FBFFFF              	call in_salah3
+  1418 00000B5F EB9C                    	jmp pilih_jk
+  1419                                  	
+  1420                                  ;label perhitungan laki-laki	
+  1421                                  laki:
+  1422 00000B61 B8[85010000]            	mov eax, satu
+  1423 00000B66 BB01000000              	mov ebx, 1
+  1424 00000B6B E8A7F4FFFF              	call printStr
+  1425                                  	
+  1426                                  	;scan bb,tb,u,
+  1427 00000B70 E81FF6FFFF              	call input
+  1428 00000B75 BE00000000              	mov esi, 0
+  1429                                  frmla:
+  1430 00000B7A 3B35[F1080000]              cmp esi,[vloop]
+  1431 00000B80 0F8498050000            	je exit
+  1432                                      
+  1433 00000B86 B8[25020000]                mov eax, fo
+  1434 00000B8B BB01000000              	mov ebx, 1
+  1435 00000B90 E882F4FFFF              	call printStr
+  1436                                  	
+  1437 00000B95 B8[5B020000]            	mov eax, formula
+  1438 00000B9A BB01000000              	mov ebx, 1
+  1439 00000B9F E873F4FFFF              	call printStr
+  1440                                  	
+  1441                                  	
+  1442 00000BA4 E89EF4FFFF                  call scanNum
+  1443 00000BA9 A3[40010000]                mov dword [n], eax
+  1444                                  	
+  1445 00000BAE BB01000000              	mov ebx, 1
+  1446 00000BB3 BA02000000                  mov edx, 2
+  1447                                      
+  1448                                      ; cmp formula
+  1449 00000BB8 3B1D[40010000]              cmp ebx, [n]
+  1450 00000BBE 7432                        je f_laki_mifflin
+  1451 00000BC0 3B15[40010000]              cmp edx, [n]
+  1452 00000BC6 0F844F010000                je f_laki_bennedict
+  1453                                      
+  1454 00000BCC E85CFCFFFF                  call cmp_edi5
+  1455 00000BD1 E846FBFFFF              	call in_salahh
+  1456 00000BD6 EBA2                    	jmp frmla
+  1457                                  	
+  1458                                  isl16:
+  1459 00000BD8 E88BFBFFFF              	call in_salah11 
+  1460 00000BDD EB9B                    	jmp frmla
+  1461                                  	
+  1462                                  isl17:
+  1463 00000BDF E897FBFFFF              	call in_salah22 
+  1464 00000BE4 EB94                    	jmp frmla
+  1465                                  		
+  1466                                  isl18:
+  1467 00000BE6 E8A3FBFFFF              	call in_salah33
+  1468 00000BEB EB8D                    	jmp frmla
+  1469                                      
+  1470 00000BED BF00000000                  mov edi, 0
+  1471                                  ;label formula mifflin_l
+  1472                                  f_laki_mifflin:
+  1473 00000BF2 3B3D[F1080000]          		cmp edi,[vloop]
+  1474 00000BF8 0F8420050000            		je exit
+  1475                                  		
+  1476 00000BFE B8[72020000]            		mov eax,fm
+  1477 00000C03 BB01000000              		mov ebx, 1
+  1478 00000C08 E80AF4FFFF              		call printStr
+  1479                                  		
+  1480 00000C0D E8E6F5FFFF              		call p_aktivitas
+  1481                                  		
+  1482 00000C12 E84EFCFFFF              		call cmp_aktv
+  1483                                  		
+  1484                                  
+  1485                                  
+  1486                                  ;label aktivitas1		
+  1487                                  ac1:
+  1488 00000C17 E805F6FFFF              	call bmr_l_mifflin
+  1489                                  	
+  1490 00000C1C DD05[69080000]          	fld qword[aktivitas1]
+  1491 00000C22 DD1D[38010000]          	fstp qword[tmp]
+  1492                                  	
+  1493 00000C28 DD05[AC010000]          	fld qword[result4]
+  1494 00000C2E DD05[38010000]          	fld qword[tmp]
+  1495 00000C34 DEC9                    	fmul
+  1496 00000C36 DD1D[AC010000]          	fstp qword[result4]
+  1497                                  	
+  1498 00000C3C E834F9FFFF              	call hasil
+  1499 00000C41 E82BFEFFFF              	call ulang_lagi
+  1500 00000C46 E9D3040000              	jmp exit
+  1501                                  ;label aktvitas2	
+  1502                                  ac2:
+  1503 00000C4B E8D1F5FFFF              	call bmr_l_mifflin
+  1504                                  	
+  1505 00000C50 DD05[71080000]          	fld qword[aktivitas2]
+  1506 00000C56 DD1D[38010000]          	fstp qword[tmp]
+  1507                                  	
+  1508 00000C5C DD05[AC010000]          	fld qword[result4]
+  1509 00000C62 DD05[38010000]          	fld qword[tmp]
+  1510 00000C68 DEC9                    	fmul
+  1511 00000C6A DD1D[AC010000]          	fstp qword[result4]
+  1512                                  	
+  1513 00000C70 E800F9FFFF              	call hasil
+  1514 00000C75 E8F7FDFFFF              	call ulang_lagi
+  1515 00000C7A E99F040000              	jmp exit
+  1516                                  
+  1517                                  ;label aktvitas3	
+  1518                                  ac3:
+  1519 00000C7F E89DF5FFFF              	call bmr_l_mifflin
+  1520                                  	
+  1521 00000C84 DD05[79080000]          	fld qword[aktivitas3]
+  1522 00000C8A DD1D[38010000]          	fstp qword[tmp]
+  1523                                  	
+  1524 00000C90 DD05[AC010000]          	fld qword[result4]
+  1525 00000C96 DD05[38010000]          	fld qword[tmp]
+  1526 00000C9C DEC9                    	fmul
+  1527 00000C9E DD1D[AC010000]          	fstp qword[result4]
+  1528                                  	
+  1529 00000CA4 E8CCF8FFFF              	call hasil
+  1530 00000CA9 E8C3FDFFFF              	call ulang_lagi
+  1531 00000CAE E96B040000              	jmp exit
+  1532                                  
+  1533                                  ;label aktvitas4	
+  1534                                  ac4:
+  1535 00000CB3 E869F5FFFF              	call bmr_l_mifflin
+  1536                                  	
+  1537 00000CB8 DD05[81080000]          	fld qword[aktivitas4]
+  1538 00000CBE DD1D[38010000]          	fstp qword[tmp]
+  1539                                  	
+  1540 00000CC4 DD05[AC010000]          	fld qword[result4]
+  1541 00000CCA DD05[38010000]          	fld qword[tmp]
+  1542 00000CD0 DEC9                    	fmul
+  1543 00000CD2 DD1D[AC010000]          	fstp qword[result4]
+  1544                                  	
+  1545 00000CD8 E898F8FFFF              	call hasil
+  1546 00000CDD E88FFDFFFF              	call ulang_lagi
+  1547 00000CE2 E937040000              	jmp exit
+  1548                                  	
+  1549                                  ;label aktvitas5
+  1550                                  ac5:
+  1551 00000CE7 E835F5FFFF              	call bmr_l_mifflin
+  1552                                  	
+  1553 00000CEC DD05[89080000]          	fld qword[aktivitas5]
+  1554 00000CF2 DD1D[38010000]          	fstp qword[tmp]
+  1555                                  	
+  1556 00000CF8 DD05[AC010000]          	fld qword[result4]
+  1557 00000CFE DD05[38010000]          	fld qword[tmp]
+  1558 00000D04 DEC9                    	fmul
+  1559 00000D06 DD1D[AC010000]          	fstp qword[result4]
+  1560                                  	
+  1561 00000D0C E864F8FFFF              	call hasil
+  1562 00000D11 E85BFDFFFF              	call ulang_lagi
+  1563 00000D16 E903040000              	jmp exit
+  1564                                  
+  1565                                  ;label formula bennedict_l
+  1566                                  f_laki_bennedict:
+  1567 00000D1B 3B3D[F1080000]          		cmp edi,[vloop]
+  1568 00000D21 0F84F7030000            		je exit
+  1569                                  		
+  1570 00000D27 B8[97020000]            		mov eax,fb
+  1571 00000D2C BB01000000              		mov ebx, 1
+  1572 00000D31 E8E1F2FFFF              		call printStr
+  1573                                  		
+  1574 00000D36 E8BDF4FFFF              		call p_aktivitas
+  1575 00000D3B E8A8FBFFFF              		call cmp_aktv1
+  1576                                  
+  1577                                  ;label aktvitas1
+  1578                                  acb1:
+  1579 00000D40 E880F6FFFF              	call bmr_l_bennedict
+  1580                                  	
+  1581 00000D45 DD05[69080000]          	fld qword[aktivitas1]
+  1582 00000D4B DD1D[38010000]          	fstp qword[tmp]
+  1583                                  	
+  1584 00000D51 DD05[AC010000]          	fld qword[result4]
+  1585 00000D57 DD05[38010000]          	fld qword[tmp]
+  1586 00000D5D DEC9                    	fmul
+  1587 00000D5F DD1D[AC010000]          	fstp qword[result4]
+  1588                                  	
+  1589 00000D65 E80BF8FFFF              	call hasil
+  1590 00000D6A E802FDFFFF              	call ulang_lagi
+  1591 00000D6F E9AA030000              	jmp exit
+  1592                                  	
+  1593                                  ;label aktvitas2
+  1594                                  acb2:
+  1595 00000D74 E84CF6FFFF              	call bmr_l_bennedict
+  1596                                  	
+  1597 00000D79 DD05[71080000]          	fld qword[aktivitas2]
+  1598 00000D7F DD1D[38010000]          	fstp qword[tmp]
+  1599                                  	
+  1600 00000D85 DD05[AC010000]          	fld qword[result4]
+  1601 00000D8B DD05[38010000]          	fld qword[tmp]
+  1602 00000D91 DEC9                    	fmul
+  1603 00000D93 DD1D[AC010000]          	fstp qword[result4]
+  1604                                  	
+  1605 00000D99 E8D7F7FFFF              	call hasil
+  1606 00000D9E E8CEFCFFFF              	call ulang_lagi
+  1607 00000DA3 E976030000              	jmp exit
+  1608                                  
+  1609                                  ;label aktvitas3
+  1610                                  acb3:
+  1611 00000DA8 E818F6FFFF              	call bmr_l_bennedict
+  1612                                  	
+  1613 00000DAD DD05[79080000]          	fld qword[aktivitas3]
+  1614 00000DB3 DD1D[38010000]          	fstp qword[tmp]
+  1615                                  	
+  1616 00000DB9 DD05[AC010000]          	fld qword[result4]
+  1617 00000DBF DD05[38010000]          	fld qword[tmp]
+  1618 00000DC5 DEC9                    	fmul
+  1619 00000DC7 DD1D[AC010000]          	fstp qword[result4]
+  1620                                  	
+  1621 00000DCD E8A3F7FFFF              	call hasil
+  1622 00000DD2 E89AFCFFFF              	call ulang_lagi
+  1623 00000DD7 E942030000              	jmp exit
+  1624                                  
+  1625                                  ;label aktvitas4
+  1626                                  acb4:
+  1627 00000DDC E8E4F5FFFF              	call bmr_l_bennedict
+  1628                                  	
+  1629 00000DE1 DD05[81080000]          	fld qword[aktivitas4]
+  1630 00000DE7 DD1D[38010000]          	fstp qword[tmp]
+  1631                                  	
+  1632 00000DED DD05[AC010000]          	fld qword[result4]
+  1633 00000DF3 DD05[38010000]          	fld qword[tmp]
+  1634 00000DF9 DEC9                    	fmul
+  1635 00000DFB DD1D[AC010000]          	fstp qword[result4]
+  1636                                  	
+  1637 00000E01 E86FF7FFFF              	call hasil
+  1638 00000E06 E866FCFFFF              	call ulang_lagi
+  1639 00000E0B E90E030000              	jmp exit
+  1640                                  
+  1641                                  ;label aktvitas5
+  1642                                  acb5:	
+  1643 00000E10 E8B0F5FFFF              	call bmr_l_bennedict
+  1644                                  	
+  1645 00000E15 DD05[89080000]          	fld qword[aktivitas5]
+  1646 00000E1B DD1D[38010000]          	fstp qword[tmp]
+  1647                                  	
+  1648 00000E21 DD05[AC010000]          	fld qword[result4]
+  1649 00000E27 DD05[38010000]          	fld qword[tmp]
+  1650 00000E2D DEC9                    	fmul
+  1651 00000E2F DD1D[AC010000]          	fstp qword[result4]
+  1652                                  	
+  1653 00000E35 E83BF7FFFF              	call hasil
+  1654 00000E3A E832FCFFFF              	call ulang_lagi
+  1655 00000E3F E9DA020000              	jmp exit
+  1656                                  	
+  1657                                  ;label perempuan
+  1658                                  perempuan:
+  1659 00000E44 B8[A7010000]            	mov eax, dua
+  1660 00000E49 BB01000000              	mov ebx, 1
+  1661 00000E4E E8C4F1FFFF              	call printStr
+  1662                                  	
+  1663 00000E53 E83CF3FFFF              	call input
+  1664                                  	
+  1665 00000E58 BE00000000              	mov esi, 0
+  1666                                  frmlaa:
+  1667 00000E5D 3B35[F1080000]              cmp esi,[vloop]
+  1668 00000E63 0F84B5020000            	je exit
+  1669                                      
+  1670 00000E69 B8[25020000]                mov eax, fo
+  1671 00000E6E BB01000000              	mov ebx, 1
+  1672 00000E73 E89FF1FFFF              	call printStr
+  1673                                  	
+  1674 00000E78 B8[5B020000]            	mov eax, formula
+  1675 00000E7D BB01000000              	mov ebx, 1
+  1676 00000E82 E890F1FFFF              	call printStr
+  1677                                  	
+  1678                                  	
+  1679 00000E87 E8BBF1FFFF                  call scanNum
+  1680 00000E8C A3[40010000]                mov dword [n], eax
+  1681                                  	
+  1682 00000E91 BB01000000              	mov ebx, 1
+  1683 00000E96 B902000000                  mov ecx, 2
+  1684                                      
+  1685                                      ;cmp formula
+  1686 00000E9B 3B1D[40010000]              cmp ebx, [n]
+  1687 00000EA1 7432                        je f_perempuan_mifflin
+  1688 00000EA3 3B0D[40010000]              cmp ecx, [n]
+  1689 00000EA9 0F844F010000                je f_perempuan_bennedict
+  1690                                  	
+  1691 00000EAF E895F9FFFF              	call cmp_edi6
+  1692 00000EB4 E863F8FFFF              	call in_salahh
+  1693 00000EB9 EBA2                    	jmp frmlaa
+  1694                                  	
+  1695                                  isl19:
+  1696 00000EBB E8A8F8FFFF              	call in_salah11 
+  1697 00000EC0 EB9B                    	jmp frmlaa
+  1698                                  	
+  1699                                  isl20:
+  1700 00000EC2 E8B4F8FFFF              	call in_salah22 
+  1701 00000EC7 EB94                    	jmp frmlaa
+  1702                                  		
+  1703                                  isl21:
+  1704 00000EC9 E8C0F8FFFF              	call in_salah33
+  1705 00000ECE EB8D                    	jmp frmlaa
+  1706                                  	
+  1707 00000ED0 BF00000000              	mov edi,0
+  1708                                  f_perempuan_mifflin:
+  1709 00000ED5 3B3D[F1080000]          		cmp edi,[vloop]
+  1710 00000EDB 0F843D020000            		je exit
+  1711                                  		
+  1712 00000EE1 B8[72020000]            		mov eax,fm
+  1713 00000EE6 BB01000000              		mov ebx, 1
+  1714 00000EEB E827F1FFFF              		call printStr
+  1715                                  		
+  1716 00000EF0 E803F3FFFF              		call p_aktivitas
+  1717                                  		
+  1718 00000EF5 E871FAFFFF              		call cmp_aktv2
+  1719                                  
+  1720                                  acmp1:
+  1721 00000EFA E8EEF3FFFF              	call bmr_p_mifflin
+  1722                                  	
+  1723 00000EFF DD05[69080000]          	fld qword[aktivitas1]
+  1724 00000F05 DD1D[38010000]          	fstp qword[tmp]
+  1725                                  	
+  1726 00000F0B DD05[AC010000]          	fld qword[result4]
+  1727 00000F11 DD05[38010000]          	fld qword[tmp]
+  1728 00000F17 DEC9                    	fmul
+  1729 00000F19 DD1D[AC010000]          	fstp qword[result4]
+  1730                                  	
+  1731 00000F1F E851F6FFFF              	call hasil
+  1732 00000F24 E848FBFFFF              	call ulang_lagi
+  1733 00000F29 E9F0010000              	jmp exit
+  1734                                  	
+  1735                                  acmp2:
+  1736 00000F2E E8BAF3FFFF              	call bmr_p_mifflin
+  1737                                  	
+  1738 00000F33 DD05[71080000]          	fld qword[aktivitas2]
+  1739 00000F39 DD1D[38010000]          	fstp qword[tmp]
+  1740                                  	
+  1741 00000F3F DD05[AC010000]          	fld qword[result4]
+  1742 00000F45 DD05[38010000]          	fld qword[tmp]
+  1743 00000F4B DEC9                    	fmul
+  1744 00000F4D DD1D[AC010000]          	fstp qword[result4]
+  1745                                  	
+  1746 00000F53 E81DF6FFFF              	call hasil
+  1747 00000F58 E814FBFFFF              	call ulang_lagi
+  1748 00000F5D E9BC010000              	jmp exit
+  1749                                  	
+  1750                                  acmp3:
+  1751 00000F62 E886F3FFFF              	call bmr_p_mifflin
+  1752                                  	
+  1753 00000F67 DD05[79080000]          	fld qword[aktivitas3]
+  1754 00000F6D DD1D[38010000]          	fstp qword[tmp]
+  1755                                  	
+  1756 00000F73 DD05[AC010000]          	fld qword[result4]
+  1757 00000F79 DD05[38010000]          	fld qword[tmp]
+  1758 00000F7F DEC9                    	fmul
+  1759 00000F81 DD1D[AC010000]          	fstp qword[result4]
+  1760                                  	
+  1761 00000F87 E8E9F5FFFF              	call hasil
+  1762 00000F8C E8E0FAFFFF              	call ulang_lagi
+  1763 00000F91 E988010000              	jmp exit
+  1764                                  	
+  1765                                  acmp4:
+  1766 00000F96 E852F3FFFF              	call bmr_p_mifflin
+  1767                                  	
+  1768 00000F9B DD05[81080000]          	fld qword[aktivitas4]
+  1769 00000FA1 DD1D[38010000]          	fstp qword[tmp]
+  1770                                  	
+  1771 00000FA7 DD05[AC010000]          	fld qword[result4]
+  1772 00000FAD DD05[38010000]          	fld qword[tmp]
+  1773 00000FB3 DEC9                    	fmul
+  1774 00000FB5 DD1D[AC010000]          	fstp qword[result4]
+  1775                                  	
+  1776 00000FBB E8B5F5FFFF              	call hasil
+  1777 00000FC0 E8ACFAFFFF              	call ulang_lagi
+  1778 00000FC5 E954010000              	jmp exit
+  1779                                  	
+  1780                                  acmp5:
+  1781 00000FCA E81EF3FFFF              	call bmr_p_mifflin
+  1782                                  	
+  1783 00000FCF DD05[89080000]          	fld qword[aktivitas5]
+  1784 00000FD5 DD1D[38010000]          	fstp qword[tmp]
+  1785                                  	
+  1786 00000FDB DD05[AC010000]          	fld qword[result4]
+  1787 00000FE1 DD05[38010000]          	fld qword[tmp]
+  1788 00000FE7 DEC9                    	fmul
+  1789 00000FE9 DD1D[AC010000]          	fstp qword[result4]
+  1790                                  	
+  1791 00000FEF E881F5FFFF              	call hasil
+  1792 00000FF4 E878FAFFFF              	call ulang_lagi
+  1793 00000FF9 E920010000              	jmp exit
+  1794                                  	
+  1795                                  f_perempuan_bennedict:
+  1796 00000FFE 3B3D[F1080000]          		cmp edi,[vloop]
+  1797 00001004 0F8414010000            		je exit
+  1798                                  		
+  1799 0000100A B8[97020000]            		mov eax,fb
+  1800 0000100F BB01000000              		mov ebx, 1
+  1801 00001014 E8FEEFFFFF              		call printStr
+  1802                                  		
+  1803 00001019 E8DAF1FFFF              		call p_aktivitas
+  1804 0000101E E8CBF9FFFF              		call cmp_aktv3
+  1805                                  		
+  1806                                  acbp1:
+  1807 00001023 E875F4FFFF              		call bmr_p_bennedict
+  1808                                  		
+  1809 00001028 DD05[69080000]          		fld qword[aktivitas1]
+  1810 0000102E DD1D[38010000]          		fstp qword[tmp]
+  1811                                  		
+  1812 00001034 DD05[AC010000]          		fld qword[result4]
+  1813 0000103A DD05[38010000]          		fld qword[tmp]
+  1814 00001040 DEC9                    		fmul
+  1815 00001042 DD1D[AC010000]          		fstp qword[result4] 
+  1816                                  		
+  1817 00001048 E828F5FFFF              		call hasil
+  1818 0000104D E81FFAFFFF              		call ulang_lagi
+  1819 00001052 E9C7000000              		jmp exit
+  1820                                  		
+  1821                                  acbp2:	
+  1822 00001057 E841F4FFFF              		call bmr_p_bennedict
+  1823                                  		
+  1824 0000105C DD05[71080000]          		fld qword[aktivitas2]
+  1825 00001062 DD1D[38010000]          		fstp qword[tmp]
+  1826                                  		
+  1827 00001068 DD05[AC010000]          		fld qword[result4]
+  1828 0000106E DD05[38010000]          		fld qword[tmp]
+  1829 00001074 DEC9                    		fmul
+  1830 00001076 DD1D[AC010000]          		fstp qword[result4] 
+  1831                                  		
+  1832 0000107C E8F4F4FFFF              		call hasil
+  1833 00001081 E8EBF9FFFF              		call ulang_lagi
+  1834 00001086 E993000000              		jmp exit
+  1835                                  		
+  1836                                  acbp3:
+  1837 0000108B E80DF4FFFF              		call bmr_p_bennedict
+  1838                                  		
+  1839 00001090 DD05[79080000]          		fld qword[aktivitas3]
+  1840 00001096 DD1D[38010000]          		fstp qword[tmp]
+  1841                                  		
+  1842 0000109C DD05[AC010000]          		fld qword[result4]
+  1843 000010A2 DD05[38010000]          		fld qword[tmp]
+  1844 000010A8 DEC9                    		fmul
+  1845 000010AA DD1D[AC010000]          		fstp qword[result4] 
+  1846                                  		
+  1847 000010B0 E8C0F4FFFF              		call hasil
+  1848 000010B5 E8B7F9FFFF              		call ulang_lagi
+  1849 000010BA EB62                    		jmp exit
+  1850                                  		
+  1851                                  acbp4:
+  1852 000010BC E8DCF3FFFF              		call bmr_p_bennedict
+  1853                                  		
+  1854 000010C1 DD05[81080000]          		fld qword[aktivitas4]
+  1855 000010C7 DD1D[38010000]          		fstp qword[tmp]
+  1856                                  		
+  1857 000010CD DD05[AC010000]          		fld qword[result4]
+  1858 000010D3 DD05[38010000]          		fld qword[tmp]
+  1859 000010D9 DEC9                    		fmul
+  1860 000010DB DD1D[AC010000]          		fstp qword[result4] 
+  1861                                  		
+  1862 000010E1 E88FF4FFFF              		call hasil
+  1863 000010E6 E886F9FFFF              		call ulang_lagi
+  1864 000010EB EB31                    		jmp exit
+  1865                                  		
+  1866                                  acbp5:
+  1867 000010ED E8ABF3FFFF              		call bmr_p_bennedict
+  1868                                  		
+  1869 000010F2 DD05[89080000]          		fld qword[aktivitas5]
+  1870 000010F8 DD1D[38010000]          		fstp qword[tmp]
+  1871                                  		
+  1872 000010FE DD05[AC010000]          		fld qword[result4]
+  1873 00001104 DD05[38010000]          		fld qword[tmp]
+  1874 0000110A DEC9                    		fmul
+  1875 0000110C DD1D[AC010000]          		fstp qword[result4] 
+  1876                                  		
+  1877 00001112 E85EF4FFFF              		call hasil
+  1878 00001117 E855F9FFFF              		call ulang_lagi
+  1879 0000111C EB00                    		jmp exit
+  1880                                  
+  1881                                  
+  1882                                  exit:
+  1883 0000111E B801000000              	mov eax,1
+  1884 00001123 BB00000000              	mov ebx,0
+  1885 00001128 CD80                    	int 0x80
+  1886                                  
